@@ -1,20 +1,44 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { LogOut, Home, Briefcase, CheckSquare } from 'lucide-react'
+import { useRouter } from 'next/navigation'
 
 export function Dashboard() {
+  const router = useRouter()
+  const [isLoading, setIsLoading] = useState(true)
   const [assetCounts, setAssetCounts] = useState({
     idle: 15,
     inProgress: 8,
     activated: 23
   })
 
+  useEffect(() => {
+    const checkAuth = () => {
+      const token = localStorage.getItem('access_token')
+      if (!token) {
+        router.push('/login')
+      } else {
+        setIsLoading(false)
+      }
+    }
+    
+    checkAuth()
+  }, [router])
+
+  if (isLoading) {
+    return null
+  }
+
   const handleLogout = () => {
-    console.log('登出')
-    // 在這裡實現登出邏輯
+    // 清除儲存的認證資訊
+    localStorage.removeItem('access_token')
+    localStorage.removeItem('user')
+    
+    // 導向回登入頁面
+    router.push('/login')
   }
 
   return (
