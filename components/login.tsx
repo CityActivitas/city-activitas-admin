@@ -82,12 +82,12 @@ export function Login() {
           <CardFooter className="flex flex-col space-y-4">
             <Button type="submit" className="w-full">登入</Button>
             <div className="flex justify-between w-full text-sm">
-              <Link href="/register" className="text-blue-600 hover:underline">
+              {/* <Link href="/register" className="text-blue-600 hover:underline">
                 註冊新帳號
               </Link>
               <Link href="/forgot-password" className="text-blue-600 hover:underline">
                 忘記密碼？
-              </Link>
+              </Link> */}
             </div>
           </CardFooter>
         </form>

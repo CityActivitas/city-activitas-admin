@@ -10,17 +10,42 @@ export function Dashboard() {
   const router = useRouter()
   const [isLoading, setIsLoading] = useState(true)
   const [assetCounts, setAssetCounts] = useState({
-    idle: 15,
+    idle: 0,
     inProgress: 8,
     activated: 23
   })
 
   useEffect(() => {
-    const checkAuth = () => {
+    const checkAuth = async () => {
       const token = localStorage.getItem('access_token')
       if (!token) {
         router.push('/login')
-      } else {
+        return
+      }
+
+      try {
+        // 取得閒置資產數據
+        const response = await fetch('http://localhost:8000/api/v1/idle', {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        })
+
+        if (!response.ok) {
+          throw new Error('Failed to fetch idle assets')
+        }
+
+        const data = await response.json()
+        
+        // 更新資產數量
+        setAssetCounts(prev => ({
+          ...prev,
+          idle: data.length  // 假設 API 返回資產陣列
+        }))
+
+        setIsLoading(false)
+      } catch (error) {
+        console.error('Error fetching idle assets:', error)
         setIsLoading(false)
       }
     }
