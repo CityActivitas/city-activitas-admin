@@ -40,7 +40,7 @@ export function InProgressCasesDetailComponent() {
   const [isLoading, setIsLoading] = useState(true)
   const router = useRouter()
 
-  console.log(cases)
+  // console.log(cases)
 
   useEffect(() => {
     const fetchCases = async () => {
@@ -99,43 +99,47 @@ export function InProgressCasesDetailComponent() {
               <TabsTrigger value="add">新增案件</TabsTrigger>
             </TabsList>
             <TabsContent value="list">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>案件ID</TableHead>
-                    <TableHead>案件狀態</TableHead>
-                    <TableHead>活化目標說明</TableHead>
-                    <TableHead>活化目標類型</TableHead>
-                    <TableHead>任務總數</TableHead>
-                    <TableHead>已完成任務數</TableHead>
-                    <TableHead>建立時間</TableHead>
-                    <TableHead>更新時間</TableHead>
-                    <TableHead>操作</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {cases.map((caseItem, index) => (
-                    <TableRow key={`${caseItem.id}-${index}`}>
-                      <TableCell>{caseItem['案件ID']}</TableCell>
-                      <TableCell>{caseItem['案件狀態']}</TableCell>
-                      <TableCell>{caseItem['活化目標說明']}</TableCell>
-                      <TableCell>{caseItem['活化目標類型']}</TableCell>
-                      <TableCell>{caseItem['任務總數']}</TableCell>
-                      <TableCell>{caseItem['已完成任務數']}</TableCell>
-                      <TableCell>{caseItem['建立時間']}</TableCell>
-                      <TableCell>{caseItem['更新時間']}</TableCell>
-                      <TableCell>
-                        <Button variant="outline" size="sm" className="mr-2" onClick={() => handleEdit(caseItem.id)}>
-                          修改
-                        </Button>
-                        <Button variant="destructive" size="sm" onClick={() => handleDelete(caseItem.id)}>
-                          刪除
-                        </Button>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
+              <div className="relative rounded-md border">
+                <div className="overflow-auto max-h-[70vh]">
+                  <Table>
+                    <TableHeader className="sticky top-0 bg-white z-10">
+                      <TableRow>
+                        <TableHead>案件ID</TableHead>
+                        <TableHead>案件狀態</TableHead>
+                        <TableHead>活化目標說明</TableHead>
+                        <TableHead>活化目標類型</TableHead>
+                        <TableHead>任務總數</TableHead>
+                        <TableHead>已完成任務數</TableHead>
+                        <TableHead>建立時間</TableHead>
+                        <TableHead>更新時間</TableHead>
+                        <TableHead>操作</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {cases.map((caseItem, index) => (
+                        <TableRow key={`${caseItem.id}-${index}`}>
+                          <TableCell>{caseItem['案件ID']}</TableCell>
+                          <TableCell>{caseItem['案件狀態']}</TableCell>
+                          <TableCell>{caseItem['活化目標說明']}</TableCell>
+                          <TableCell>{caseItem['活化目標類型']}</TableCell>
+                          <TableCell>{caseItem['任務總數']}</TableCell>
+                          <TableCell>{caseItem['已完成任務數']}</TableCell>
+                          <TableCell>{caseItem['建立時間']}</TableCell>
+                          <TableCell>{caseItem['更新時間']}</TableCell>
+                          <TableCell>
+                            <Button variant="outline" size="sm" className="mr-2" onClick={() => handleEdit(caseItem.id)}>
+                              修改
+                            </Button>
+                            <Button variant="destructive" size="sm" onClick={() => handleDelete(caseItem.id)}>
+                              刪除
+                            </Button>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
+              </div>
             </TabsContent>
             <TabsContent value="add">
               <form className="space-y-4">

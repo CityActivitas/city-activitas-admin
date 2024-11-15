@@ -15,6 +15,8 @@ import {
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Header } from "@/components/header"
+import { ScrollArea } from "@/components/ui/scroll-area"
+
 
 type Asset = {
   id: string
@@ -93,41 +95,45 @@ export function IdleAssetsDetailComponent() {
               <TabsTrigger value="add">新增資產</TabsTrigger>
             </TabsList>
             <TabsContent value="list">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>資產類型</TableHead>
-                    <TableHead>管理機關</TableHead>
-                    <TableHead>行政區</TableHead>
-                    <TableHead>地段</TableHead>
-                    <TableHead>地址</TableHead>
-                    <TableHead>標的名稱</TableHead>
-                    <TableHead>建立時間</TableHead>
-                    <TableHead>操作</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {assets.map((asset) => (
-                    <TableRow key={asset.id}>
-                      <TableCell>{asset['資產類型']}</TableCell>
-                      <TableCell>{asset['管理機關']}</TableCell>
-                      <TableCell>{asset['行政區']}</TableCell>
-                      <TableCell>{asset['地段']}</TableCell>
-                      <TableCell>{asset['地址']}</TableCell>
-                      <TableCell>{asset['標的名稱']}</TableCell>
-                      <TableCell>{asset['建立時間']}</TableCell>
-                      <TableCell>
-                        <Button variant="outline" size="sm" className="mr-2" onClick={() => handleEdit(asset.id)}>
-                          修改
-                        </Button>
-                        <Button variant="destructive" size="sm" onClick={() => handleDelete(asset.id)}>
-                          刪除
-                        </Button>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
+              <div className="relative rounded-md border">
+                <div className="overflow-auto max-h-[70vh]">
+                  <Table>
+                    <TableHeader className="sticky top-0 bg-gray-100 z-10 font-bold">
+                      <TableRow>
+                        <TableHead>資產類型</TableHead>
+                        <TableHead>管理機關</TableHead>
+                        <TableHead>行政區</TableHead>
+                        <TableHead>地段</TableHead>
+                        <TableHead>地址</TableHead>
+                        <TableHead>標的名稱</TableHead>
+                        <TableHead>建立時間</TableHead>
+                        <TableHead className="font-bold">操作</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {assets.map((asset) => (
+                        <TableRow key={asset.id}>
+                          <TableCell>{asset['資產類型']}</TableCell>
+                          <TableCell>{asset['管理機關']}</TableCell>
+                          <TableCell>{asset['行政區']}</TableCell>
+                          <TableCell>{asset['地段']}</TableCell>
+                          <TableCell>{asset['地址']}</TableCell>
+                          <TableCell>{asset['標的名稱']}</TableCell>
+                          <TableCell>{asset['建立時間']}</TableCell>
+                          <TableCell>
+                            <Button variant="outline" size="sm" className="mr-2" onClick={() => handleEdit(asset.id)}>
+                              修改
+                            </Button>
+                            <Button variant="destructive" size="sm" onClick={() => handleDelete(asset.id)}>
+                              刪除
+                            </Button>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
+              </div>
             </TabsContent>
             <TabsContent value="add">
               <form className="space-y-4">

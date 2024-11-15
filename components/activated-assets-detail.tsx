@@ -105,65 +105,49 @@ export function ActivatedAssetsDetailComponent() {
               <TabsTrigger value="add">新增資產</TabsTrigger>
             </TabsList>
             <TabsContent value="list">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>活化ID</TableHead>
-                    <TableHead>活化年度</TableHead>
-                    {/* <TableHead>行政區</TableHead> */}
-                    <TableHead>列入計算</TableHead>
-                    <TableHead>地點說明</TableHead>
-                    <TableHead>用途類型</TableHead>
-                    {/* <TableHead>管理機關</TableHead> */}
-                    <TableHead>需求機關</TableHead>
-                    {/* <TableHead>是否補列</TableHead> */}
-                    {/* <TableHead>補列年度</TableHead> */}
-                    <TableHead>計畫用途</TableHead>
-                    {/* <TableHead>資產ID</TableHead> */}
-                    {/* <TableHead>土地公告現值</TableHead> */}
-                    {/* <TableHead>房屋課稅現值</TableHead> */}
-                    {/* <TableHead>節流效益</TableHead> */}
-                    {/* <TableHead>備註</TableHead> */}
-                    {/* <TableHead>活化狀態</TableHead> */}
-                    <TableHead>活化開始日期</TableHead>
-                    <TableHead>活化結束日期</TableHead>
-                    <TableHead>操作</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {assets.map((asset, index) => (
-                    <TableRow key={asset.id || `asset-${index}`}>
-                      <TableCell>{asset['活化ID']}</TableCell>
-                      <TableCell>{asset['活化年度']}</TableCell>
-                      {/* <TableCell>{asset['行政區'] || '-'}</TableCell> */}
-                      <TableCell>{asset['列入計算']}</TableCell>
-                      <TableCell>{asset['地點說明']}</TableCell>
-                      <TableCell>{asset['用途類型']}</TableCell>
-                      {/* <TableCell>{asset['管理機關'] || '-'}</TableCell> */}
-                      <TableCell>{asset['需求機關']}</TableCell>
-                      {/* <TableCell>{asset['是否補列']}</TableCell> */}
-                      {/* <TableCell>{asset['補列年度'] || '-'}</TableCell> */}
-                      <TableCell>{asset['計畫用途']}</TableCell>
-                      {/* <TableCell>{asset['資產ID'] || '-'}</TableCell> */}
-                      {/* <TableCell>{asset['土地公告現值']}</TableCell> */}
-                      {/* <TableCell>{asset['房屋課稅現值']}</TableCell> */}
-                      {/* <TableCell>{asset['節流效益']}</TableCell> */}
-                      {/* <TableCell>{asset['備註'] || '-'}</TableCell> */}
-                      {/* <TableCell>{asset['活化狀態']}</TableCell> */}
-                      <TableCell>{asset['活化開始日期']}</TableCell>
-                      <TableCell>{asset['活化結束日期'] || '-'}</TableCell>
-                      <TableCell>
-                        <Button variant="outline" size="sm" className="mr-2" onClick={() => handleEdit(asset.id)}>
-                          修改
-                        </Button>
-                        <Button variant="destructive" size="sm" onClick={() => handleDelete(asset.id)}>
-                          刪除
-                        </Button>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
+              <div className="relative rounded-md border">
+                <div className="overflow-auto max-h-[70vh]">
+                  <Table>
+                    <TableHeader className="sticky top-0 bg-white z-10">
+                      <TableRow>
+                        <TableHead>活化ID</TableHead>
+                        <TableHead>活化年度</TableHead>
+                        <TableHead>列入計算</TableHead>
+                        <TableHead>地點說明</TableHead>
+                        <TableHead>用途類型</TableHead>
+                        <TableHead>需求機關</TableHead>
+                        <TableHead>計畫用途</TableHead>
+                        <TableHead>活化開始日期</TableHead>
+                        <TableHead>活化結束日期</TableHead>
+                        <TableHead>操作</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {assets.map((asset, index) => (
+                        <TableRow key={asset.id || `asset-${index}`}>
+                          <TableCell>{asset['活化ID']}</TableCell>
+                          <TableCell>{asset['活化年度']}</TableCell>
+                          <TableCell>{asset['列入計算']}</TableCell>
+                          <TableCell>{asset['地點說明']}</TableCell>
+                          <TableCell>{asset['用途類型']}</TableCell>
+                          <TableCell>{asset['需求機關']}</TableCell>
+                          <TableCell>{asset['計畫用途']}</TableCell>
+                          <TableCell>{asset['活化開始日期']}</TableCell>
+                          <TableCell>{asset['活化結束日期'] || '-'}</TableCell>
+                          <TableCell>
+                            <Button variant="outline" size="sm" className="mr-2" onClick={() => handleEdit(asset.id)}>
+                              修改
+                            </Button>
+                            <Button variant="destructive" size="sm" onClick={() => handleDelete(asset.id)}>
+                              刪除
+                            </Button>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
+              </div>
             </TabsContent>
             <TabsContent value="add">
               <form className="space-y-4">
