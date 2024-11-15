@@ -17,36 +17,36 @@ export function Dashboard() {
 
   useEffect(() => {
     const checkAuth = async () => {
-      const token = localStorage.getItem('access_token')
-      if (!token) {
-        router.push('/login')
-        return
-      }
-
-      try {
-        // 取得閒置資產數據
-        const response = await fetch('http://localhost:8000/api/v1/idle', {
-          headers: {
-            'Authorization': `Bearer ${token}`
-          }
-        })
-
-        if (!response.ok) {
-          throw new Error('Failed to fetch idle assets')
+      if (typeof window !== 'undefined') {
+        const token = localStorage.getItem('access_token')
+        if (!token) {
+          router.push('/login')
+          return
         }
 
-        const data = await response.json()
-        
-        // 更新資產數量
-        setAssetCounts(prev => ({
-          ...prev,
-          idle: data.length  // 假設 API 返回資產陣列
-        }))
+        try {
+          const response = await fetch('http://localhost:8000/api/v1/idle', {
+            headers: {
+              'Authorization': `Bearer ${token}`
+            }
+          })
 
-        setIsLoading(false)
-      } catch (error) {
-        console.error('Error fetching idle assets:', error)
-        setIsLoading(false)
+          if (!response.ok) {
+            throw new Error('Failed to fetch idle assets')
+          }
+
+          const data = await response.json()
+          
+          setAssetCounts(prev => ({
+            ...prev,
+            idle: data.length  // 假設 API 返回資產陣列
+          }))
+
+          setIsLoading(false)
+        } catch (error) {
+          console.error('Error fetching idle assets:', error)
+          setIsLoading(false)
+        }
       }
     }
     
@@ -58,12 +58,11 @@ export function Dashboard() {
   }
 
   const handleLogout = () => {
-    // 清除儲存的認證資訊
-    localStorage.removeItem('access_token')
-    localStorage.removeItem('user')
-    
-    // 導向回登入頁面
-    router.push('/login')
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem('access_token')
+      localStorage.removeItem('user')
+      router.push('/login')
+    }
   }
 
   return (
