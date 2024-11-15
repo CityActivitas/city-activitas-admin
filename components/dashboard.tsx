@@ -78,7 +78,7 @@ export function Dashboard() {
   return (
     <div className="min-h-screen bg-gray-100">
       <Header />
-      <main className="container mx-auto px-4">
+      <main className="container mx-auto px-4 pt-24">
         <div className="py-6">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <AssetCard 
@@ -91,7 +91,7 @@ export function Dashboard() {
               title="進行中案件" 
               icon={<Briefcase className="h-6 w-6" />} 
               count={assetCounts.inProgress}
-              onClick={() => console.log('查看進行中案件詳情')}
+              onClick={() => router.push('/in-progress-cases-detail')}
             />
             <AssetCard 
               title="已活化資產" 

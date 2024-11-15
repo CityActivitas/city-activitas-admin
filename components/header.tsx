@@ -20,7 +20,7 @@ export function Header() {
   }
 
   return (
-    <header className="bg-white shadow">
+    <header className="fixed top-0 left-0 right-0 bg-white shadow z-50">
       <div className="container mx-auto px-4">
         <div className="py-6 flex justify-between items-center">
           <h1 
