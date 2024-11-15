@@ -65,6 +65,12 @@ export function Dashboard() {
     checkAuth()
   }, [router])
 
+  const handleViewIdleAssets = () => {
+    router.push('/idle-asset-detail', {
+      state: { assets: assetCounts.idle }
+    })
+  }
+
   if (isLoading) {
     return null
   }
@@ -78,7 +84,7 @@ export function Dashboard() {
             title="閒置資產" 
             icon={<Home className="h-6 w-6" />} 
             count={assetCounts.idle}
-            onClick={() => router.push('/idle-asset-detail')}
+            onClick={handleViewIdleAssets}
           />
           <AssetCard 
             title="進行中案件" 

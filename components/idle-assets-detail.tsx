@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Button } from "@/components/ui/button"
 import {
@@ -17,47 +18,60 @@ import { Header } from "@/components/header"
 
 type Asset = {
   id: string
-  type: string
-  agency: string
-  district: string
-  section: string
-  address: string
-  coordinates: string
-  areaCoordinates: string
-  name: string
-  createdAt: string
-  updatedAt: string
+  '資產類型': string
+  '管理機關': string
+  '行政區': string
+  '地段': string
+  '地址': string
+  '定位座標': string
+  '區域座標組': string
+  '標的名稱': string
+  '建立時間': string
+  '更新時間': string
 }
-
-const mockAssets: Asset[] = [
-  {
-    id: '1',
-    type: '土地',
-    agency: '財政部',
-    district: '中正區',
-    section: '忠孝段',
-    address: '台北市中正區忠孝東路一段1號',
-    coordinates: '25.046273, 121.517498',
-    areaCoordinates: '25.046273,121.517498;25.046373,121.517598;25.046473,121.517698',
-    name: '忠孝東路閒置地',
-    createdAt: '2023-01-01',
-    updatedAt: '2023-06-15',
-  },
-  // ... 可以添加更多模擬數據
-]
 
 export function IdleAssetsDetailComponent() {
   const [assets, setAssets] = useState<Asset[]>([])
-  const [isClient, setIsClient] = useState(false)
+  const [isLoading, setIsLoading] = useState(true)
+  const router = useRouter()
+
+  console.log(assets)
 
   useEffect(() => {
-    setIsClient(true)
-    setAssets(mockAssets)
-  }, [])
+    const fetchIdleAssets = async () => {
+      if (typeof window !== 'undefined') {
+        const token = localStorage.getItem('access_token')
+        if (!token) {
+          router.push('/login')
+          return
+        }
 
-  // 在客戶端渲染之前返回 null 或載入中狀態
-  if (!isClient) {
-    return null
+        try {
+          const response = await fetch('http://localhost:8000/api/v1/idle', {
+            headers: {
+              'Authorization': `Bearer ${token}`
+            }
+          })
+
+          if (!response.ok) {
+            throw new Error('Failed to fetch idle assets')
+          }
+
+          const data = await response.json()
+          setAssets(data)
+        } catch (error) {
+          console.error('Error fetching idle assets:', error)
+        } finally {
+          setIsLoading(false)
+        }
+      }
+    }
+
+    fetchIdleAssets()
+  }, [router])
+
+  if (isLoading) {
+    return <div>載入中...</div>
   }
 
   const handleEdit = (id: string) => {
@@ -84,8 +98,8 @@ export function IdleAssetsDetailComponent() {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>資產種類</TableHead>
-                  <TableHead>機關</TableHead>
+                  <TableHead>資產類型</TableHead>
+                  <TableHead>管理機關</TableHead>
                   <TableHead>行政區</TableHead>
                   <TableHead>地段</TableHead>
                   <TableHead>地址</TableHead>
@@ -100,16 +114,16 @@ export function IdleAssetsDetailComponent() {
               <TableBody>
                 {assets.map((asset) => (
                   <TableRow key={asset.id}>
-                    <TableCell>{asset.type}</TableCell>
-                    <TableCell>{asset.agency}</TableCell>
-                    <TableCell>{asset.district}</TableCell>
-                    <TableCell>{asset.section}</TableCell>
-                    <TableCell>{asset.address}</TableCell>
-                    <TableCell>{asset.coordinates}</TableCell>
-                    <TableCell>{asset.areaCoordinates}</TableCell>
-                    <TableCell>{asset.name}</TableCell>
-                    <TableCell>{asset.createdAt}</TableCell>
-                    <TableCell>{asset.updatedAt}</TableCell>
+                    <TableCell>{asset['資產類型']}</TableCell>
+                    <TableCell>{asset['管理機關']}</TableCell>
+                    <TableCell>{asset['行政區']}</TableCell>
+                    <TableCell>{asset['地段']}</TableCell>
+                    <TableCell>{asset['地址']}</TableCell>
+                    <TableCell>{asset['定位座標']}</TableCell>
+                    <TableCell>{asset['區域座標組']}</TableCell>
+                    <TableCell>{asset['標的名稱']}</TableCell>
+                    <TableCell>{asset['建立時間']}</TableCell>
+                    <TableCell>{asset['更新時間']}</TableCell>
                     <TableCell>
                       <Button variant="outline" size="sm" className="mr-2" onClick={() => handleEdit(asset.id)}>
                         修改
