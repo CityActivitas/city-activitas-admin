@@ -97,7 +97,7 @@ export function Dashboard() {
               title="已活化資產" 
               icon={<CheckSquare className="h-6 w-6" />} 
               count={assetCounts.activated}
-              onClick={() => console.log('查看已活化資產詳情')}
+              onClick={() => router.push('/activated-assets-detail')}
             />
           </div>
         </div>

@@ -103,16 +103,9 @@ export function InProgressCasesDetailComponent() {
                 <TableHeader>
                   <TableRow>
                     <TableHead>案件ID</TableHead>
-                    {/* <TableHead>案件名稱</TableHead> */}
                     <TableHead>案件狀態</TableHead>
-                    {/* <TableHead>標的名稱</TableHead>
-                    <TableHead>地址</TableHead> */}
                     <TableHead>活化目標說明</TableHead>
                     <TableHead>活化目標類型</TableHead>
-                    {/* <TableHead>管理機關</TableHead>
-                    <TableHead>行政區</TableHead> */}
-                    {/* <TableHead>資產類型</TableHead> */}
-                    {/* <TableHead>最新會議結論</TableHead> */}
                     <TableHead>任務總數</TableHead>
                     <TableHead>已完成任務數</TableHead>
                     <TableHead>建立時間</TableHead>
@@ -121,19 +114,12 @@ export function InProgressCasesDetailComponent() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {cases.map((caseItem) => (
-                    <TableRow key={caseItem.id}>
+                  {cases.map((caseItem, index) => (
+                    <TableRow key={`${caseItem.id}-${index}`}>
                       <TableCell>{caseItem['案件ID']}</TableCell>
-                      {/* <TableCell>{caseItem['案件名稱']}</TableCell> */}
                       <TableCell>{caseItem['案件狀態']}</TableCell>
-                      {/* <TableCell>{caseItem['標的名稱']}</TableCell>
-                      <TableCell>{caseItem['地址']}</TableCell> */}
                       <TableCell>{caseItem['活化目標說明']}</TableCell>
                       <TableCell>{caseItem['活化目標類型']}</TableCell>
-                      {/* <TableCell>{caseItem['管理機關']}</TableCell>
-                      <TableCell>{caseItem['行政區']}</TableCell> */}
-                      {/* <TableCell>{caseItem['資產類型']}</TableCell> */}
-                      {/* <TableCell>{caseItem['最新會議結論'] || '-'}</TableCell> */}
                       <TableCell>{caseItem['任務總數']}</TableCell>
                       <TableCell>{caseItem['已完成任務數']}</TableCell>
                       <TableCell>{caseItem['建立時間']}</TableCell>
