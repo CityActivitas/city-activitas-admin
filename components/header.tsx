@@ -1,11 +1,27 @@
 'use client'
 
 import { Button } from "@/components/ui/button"
-import { LogOut } from 'lucide-react'
+import { LogOut, User } from 'lucide-react'
 import { useRouter } from 'next/navigation'
+import { useEffect, useState } from 'react'
+
+type UserData = {
+  email: string
+  // 其他可能的使用者資料欄位
+}
 
 export function Header() {
   const router = useRouter()
+  const [user, setUser] = useState<UserData | null>(null)
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const userData = localStorage.getItem('user')
+      if (userData) {
+        setUser(JSON.parse(userData))
+      }
+    }
+  }, [])
 
   const handleLogout = () => {
     if (typeof window !== 'undefined') {
@@ -29,9 +45,15 @@ export function Header() {
           >
             不動產資產管理系統
           </h1>
-          <Button variant="outline" onClick={handleLogout}>
-            <LogOut className="mr-2 h-4 w-4" /> 登出
-          </Button>
+          <div className="flex items-center gap-4">
+            <div className="flex items-center text-gray-600">
+              <User className="h-4 w-4 mr-2" />
+              <span>{user?.email || '使用者'}</span>
+            </div>
+            <Button variant="outline" onClick={handleLogout}>
+              <LogOut className="mr-2 h-4 w-4" /> 登出
+            </Button>
+          </div>
         </div>
       </div>
     </header>

@@ -108,7 +108,7 @@ export function ActivatedAssetsDetailComponent() {
               <div className="relative rounded-md border">
                 <div className="overflow-auto max-h-[70vh]">
                   <Table>
-                    <TableHeader className="sticky top-0 bg-white z-10">
+                    <TableHeader className="sticky top-0 bg-gray-100 z-10 font-bold">
                       <TableRow>
                         <TableHead>活化ID</TableHead>
                         <TableHead>活化年度</TableHead>
@@ -119,7 +119,7 @@ export function ActivatedAssetsDetailComponent() {
                         <TableHead>計畫用途</TableHead>
                         <TableHead>活化開始日期</TableHead>
                         <TableHead>活化結束日期</TableHead>
-                        <TableHead>操作</TableHead>
+                        <TableHead className="font-bold">操作</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>

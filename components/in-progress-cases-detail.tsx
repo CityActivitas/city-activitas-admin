@@ -102,7 +102,7 @@ export function InProgressCasesDetailComponent() {
               <div className="relative rounded-md border">
                 <div className="overflow-auto max-h-[70vh]">
                   <Table>
-                    <TableHeader className="sticky top-0 bg-white z-10">
+                    <TableHeader className="sticky top-0 bg-gray-100 z-10 font-bold">
                       <TableRow>
                         <TableHead>案件ID</TableHead>
                         <TableHead>案件狀態</TableHead>
@@ -112,7 +112,7 @@ export function InProgressCasesDetailComponent() {
                         <TableHead>已完成任務數</TableHead>
                         <TableHead>建立時間</TableHead>
                         <TableHead>更新時間</TableHead>
-                        <TableHead>操作</TableHead>
+                        <TableHead className="font-bold">操作</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
