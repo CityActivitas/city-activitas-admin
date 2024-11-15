@@ -15,18 +15,31 @@ import { Switch } from '@/components/ui/switch'
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group"
 
 interface FilterBlockProps {
-  onFilterChange: (filters: { isAssetIncluded: boolean, selectedAssetTypes: string[] }) => void
+  onFilterChange: (filters: { 
+    isAssetIncluded: boolean, 
+    selectedAssetTypes: string[],
+    isAgencyIncluded: boolean,
+    selectedAgencies: string[] 
+  }) => void
+  agencies: string[]
 }
 
-export function FilterBlock({ onFilterChange }: FilterBlockProps) {
+export function FilterBlock({ onFilterChange, agencies }: FilterBlockProps) {
   const [searchText, setSearchText] = React.useState('')
   const [isOpen, setIsOpen] = React.useState(false)
   const [isAssetIncluded, setIsAssetIncluded] = React.useState(true)
   const [selectedAssetTypes, setSelectedAssetTypes] = React.useState<string[]>(['building', 'land'])
+  const [isAgencyIncluded, setIsAgencyIncluded] = React.useState(true)
+  const [selectedAgencies, setSelectedAgencies] = React.useState<string[]>(agencies)
 
   React.useEffect(() => {
-    onFilterChange({ isAssetIncluded, selectedAssetTypes })
-  }, [isAssetIncluded, selectedAssetTypes, onFilterChange])
+    onFilterChange({ 
+      isAssetIncluded, 
+      selectedAssetTypes,
+      isAgencyIncluded,
+      selectedAgencies 
+    })
+  }, [isAssetIncluded, selectedAssetTypes, isAgencyIncluded, selectedAgencies, onFilterChange])
 
   return (
     <div className="border rounded-lg py-2 px-4 bg-white">
@@ -74,8 +87,8 @@ export function FilterBlock({ onFilterChange }: FilterBlockProps) {
                   onValueChange={setSelectedAssetTypes}
                   className="flex justify-start gap-4"
                 >
-                  <ToggleGroupItem value="building" className="h-10 w-20 rounded-r-none">建物</ToggleGroupItem>
-                  <ToggleGroupItem value="land" className="h-10 w-20 rounded-l-none border-l-0">土地</ToggleGroupItem>
+                  <ToggleGroupItem value="building" className="h-8 rounded-r-none">建物</ToggleGroupItem>
+                  <ToggleGroupItem value="land" className="h-8 rounded-l-none border-l-0">土地</ToggleGroupItem>
                 </ToggleGroup>
               </div>
             </div>
@@ -85,16 +98,31 @@ export function FilterBlock({ onFilterChange }: FilterBlockProps) {
               <h3 className="font-medium">管理機關</h3>
               <div className="space-y-4">
                 <div className="flex items-center gap-2">
-                  <Switch id="agency-toggle" />
-                  <Label htmlFor="agency-toggle">包含/不包含</Label>
+                  <Switch 
+                    id="agency-toggle" 
+                    checked={isAgencyIncluded}
+                    onCheckedChange={setIsAgencyIncluded}
+                  />
+                  <Label htmlFor="agency-toggle">
+                    {isAgencyIncluded ? "包含" : "不包含"}
+                  </Label>
                 </div>
-                <div className="flex flex-wrap gap-2">
-                  {Array(6).fill(null).map((_, i) => (
-                    <Button key={`agency-${i}`} variant="outline" className="h-8">
-                      {i % 2 === 0 ? '建物' : '土地'}
-                    </Button>
+                <ToggleGroup 
+                  type="multiple"
+                  value={selectedAgencies}
+                  onValueChange={setSelectedAgencies}
+                  className="flex justify-start gap-4"
+                >
+                  {agencies.map((agency) => (
+                    <ToggleGroupItem 
+                      key={agency} 
+                      value={agency} 
+                      className="h-8"
+                    >
+                      {agency}
+                    </ToggleGroupItem>
                   ))}
-                </div>
+                </ToggleGroup>
               </div>
             </div>
 

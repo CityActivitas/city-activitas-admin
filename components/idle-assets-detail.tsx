@@ -35,6 +35,8 @@ export function IdleAssetsDetailComponent() {
   const router = useRouter()
   const [selectedAssetTypes, setSelectedAssetTypes] = useState<string[]>(['building', 'land'])
   const [isAssetIncluded, setIsAssetIncluded] = useState(true)
+  const [selectedAgencies, setSelectedAgencies] = useState<string[]>([])
+  const [isAgencyIncluded, setIsAgencyIncluded] = useState(true)
 
   // console.log(assets)
 
@@ -85,28 +87,44 @@ export function IdleAssetsDetailComponent() {
     setAssets(assets.filter(asset => asset.id !== id))
   }
 
-  const handleFilterChange = ({ isAssetIncluded, selectedAssetTypes }: {
+  // 獲取唯一的管理機關列表
+  const uniqueAgencies = Array.from(new Set(assets.map(asset => asset['管理機關'])))
+
+  const handleFilterChange = ({ 
+    isAssetIncluded, 
+    selectedAssetTypes,
+    isAgencyIncluded,
+    selectedAgencies 
+  }: {
     isAssetIncluded: boolean
     selectedAssetTypes: string[]
+    isAgencyIncluded: boolean
+    selectedAgencies: string[]
   }) => {
     setIsAssetIncluded(isAssetIncluded)
     setSelectedAssetTypes(selectedAssetTypes)
+    setIsAgencyIncluded(isAgencyIncluded)
+    setSelectedAgencies(selectedAgencies)
   }
 
-  // 添加過濾資產的函數
+  // 修改過濾邏輯
   const filteredAssets = assets.filter(asset => {
+    // 資產類型過濾
     const assetType = asset['資產類型']
     const isBuilding = assetType.includes('建物')
     const isLand = assetType.includes('土地')
-    
-    // 判斷資產類型是否符合選擇條件
     const matchesType = (
       (isBuilding && selectedAssetTypes.includes('building')) ||
       (isLand && selectedAssetTypes.includes('land'))
     )
-    
-    // 根據 isAssetIncluded 決定是要包含還是排除
-    return isAssetIncluded ? matchesType : !matchesType
+    const assetTypeResult = isAssetIncluded ? matchesType : !matchesType
+
+    // 管理機關過濾
+    const matchesAgency = selectedAgencies.length === 0 || 
+      selectedAgencies.includes(asset['管理機關'])
+    const agencyResult = isAgencyIncluded ? matchesAgency : !matchesAgency
+
+    return assetTypeResult && agencyResult
   })
 
   return (
@@ -121,16 +139,27 @@ export function IdleAssetsDetailComponent() {
               <TabsTrigger value="add">新增資產</TabsTrigger>
             </TabsList>
             <TabsContent value="list">
-              <FilterBlock onFilterChange={handleFilterChange} />
-              <div className="space-y-2">
+              <FilterBlock 
+                onFilterChange={handleFilterChange} 
+                agencies={uniqueAgencies}
+              />
+              <div className="space-y-2 my-4">
                 <p className="text-sm text-gray-600">
-                  資產種類篩選條件：{isAssetIncluded ? "包含" : "不包含"}
+                  資產種類{isAssetIncluded ? "包含" : "不包含"}：
                   {selectedAssetTypes.map((type) => (
                     <span key={type} className="ml-2 px-2 py-1 bg-gray-100 rounded text-sm">
                       {type === 'building' ? '建物' : '土地'}
                     </span>
                   ))}
                 </p>
+                <p className="text-sm text-gray-600">
+                  管理機關{isAgencyIncluded ? "包含" : "不包含"}：
+                  {selectedAgencies.map((agency) => (
+                    <span key={agency} className="ml-2 px-2 py-1 bg-gray-100 rounded text-sm">
+                    {agency}
+                  </span>
+                ))}
+              </p>
               </div>
               <div className="relative rounded-md border mt-4">
                 <div className="overflow-auto max-h-[70vh]">
