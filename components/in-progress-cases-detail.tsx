@@ -18,20 +18,29 @@ import { Header } from "@/components/header"
 
 type Case = {
   id: string
-  '案件編號': string
+  '任務總數': string
+  '地址': string
+  '已完成任務數': string
+  '建立時間': string
+  '更新時間': string
+  '最新會議結論': string | null
+  '案件ID': string
   '案件名稱': string
+  '案件狀態': string
+  '標的名稱': string
+  '活化目標說明': string
+  '活化目標類型': string
   '管理機關': string
   '行政區': string
-  '地段': string
-  '地址': string
-  '處理進度': string
-  '建立時間': string
+  '資產類型': string
 }
 
 export function InProgressCasesDetailComponent() {
   const [cases, setCases] = useState<Case[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const router = useRouter()
+
+  console.log(cases)
 
   useEffect(() => {
     const fetchCases = async () => {
@@ -93,28 +102,42 @@ export function InProgressCasesDetailComponent() {
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>案件編號</TableHead>
-                    <TableHead>案件名稱</TableHead>
-                    <TableHead>管理機關</TableHead>
-                    <TableHead>行政區</TableHead>
-                    <TableHead>地段</TableHead>
-                    <TableHead>地址</TableHead>
-                    <TableHead>處理進度</TableHead>
+                    <TableHead>案件ID</TableHead>
+                    {/* <TableHead>案件名稱</TableHead> */}
+                    <TableHead>案件狀態</TableHead>
+                    {/* <TableHead>標的名稱</TableHead>
+                    <TableHead>地址</TableHead> */}
+                    <TableHead>活化目標說明</TableHead>
+                    <TableHead>活化目標類型</TableHead>
+                    {/* <TableHead>管理機關</TableHead>
+                    <TableHead>行政區</TableHead> */}
+                    {/* <TableHead>資產類型</TableHead> */}
+                    {/* <TableHead>最新會議結論</TableHead> */}
+                    <TableHead>任務總數</TableHead>
+                    <TableHead>已完成任務數</TableHead>
                     <TableHead>建立時間</TableHead>
+                    <TableHead>更新時間</TableHead>
                     <TableHead>操作</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {cases.map((caseItem) => (
                     <TableRow key={caseItem.id}>
-                      <TableCell>{caseItem['案件編號']}</TableCell>
-                      <TableCell>{caseItem['案件名稱']}</TableCell>
-                      <TableCell>{caseItem['管理機關']}</TableCell>
-                      <TableCell>{caseItem['行政區']}</TableCell>
-                      <TableCell>{caseItem['地段']}</TableCell>
-                      <TableCell>{caseItem['地址']}</TableCell>
-                      <TableCell>{caseItem['處理進度']}</TableCell>
+                      <TableCell>{caseItem['案件ID']}</TableCell>
+                      {/* <TableCell>{caseItem['案件名稱']}</TableCell> */}
+                      <TableCell>{caseItem['案件狀態']}</TableCell>
+                      {/* <TableCell>{caseItem['標的名稱']}</TableCell>
+                      <TableCell>{caseItem['地址']}</TableCell> */}
+                      <TableCell>{caseItem['活化目標說明']}</TableCell>
+                      <TableCell>{caseItem['活化目標類型']}</TableCell>
+                      {/* <TableCell>{caseItem['管理機關']}</TableCell>
+                      <TableCell>{caseItem['行政區']}</TableCell> */}
+                      {/* <TableCell>{caseItem['資產類型']}</TableCell> */}
+                      {/* <TableCell>{caseItem['最新會議結論'] || '-'}</TableCell> */}
+                      <TableCell>{caseItem['任務總數']}</TableCell>
+                      <TableCell>{caseItem['已完成任務數']}</TableCell>
                       <TableCell>{caseItem['建立時間']}</TableCell>
+                      <TableCell>{caseItem['更新時間']}</TableCell>
                       <TableCell>
                         <Button variant="outline" size="sm" className="mr-2" onClick={() => handleEdit(caseItem.id)}>
                           修改
@@ -132,12 +155,28 @@ export function InProgressCasesDetailComponent() {
               <form className="space-y-4">
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <Label htmlFor="caseNumber">案件編號</Label>
-                    <Input id="caseNumber" placeholder="輸入案件編號" />
+                    <Label htmlFor="taskNumber">任務編號</Label>
+                    <Input id="taskNumber" placeholder="輸入任務編號" />
                   </div>
                   <div>
                     <Label htmlFor="caseName">案件名稱</Label>
                     <Input id="caseName" placeholder="輸入案件名稱" />
+                  </div>
+                  <div>
+                    <Label htmlFor="status">案件狀態</Label>
+                    <Input id="status" placeholder="輸入案件狀態" />
+                  </div>
+                  <div>
+                    <Label htmlFor="location">標的位置</Label>
+                    <Input id="location" placeholder="輸入標的位置" />
+                  </div>
+                  <div>
+                    <Label htmlFor="target">活化目標說明</Label>
+                    <Input id="target" placeholder="輸入活化目標說明" />
+                  </div>
+                  <div>
+                    <Label htmlFor="targetType">活化目標類型</Label>
+                    <Input id="targetType" placeholder="輸入活化目標類型" />
                   </div>
                   <div>
                     <Label htmlFor="agency">管理機關</Label>
@@ -148,16 +187,8 @@ export function InProgressCasesDetailComponent() {
                     <Input id="district" placeholder="輸入行政區" />
                   </div>
                   <div>
-                    <Label htmlFor="section">地段</Label>
-                    <Input id="section" placeholder="輸入地段" />
-                  </div>
-                  <div>
-                    <Label htmlFor="address">地址</Label>
-                    <Input id="address" placeholder="輸入地址" />
-                  </div>
-                  <div>
-                    <Label htmlFor="progress">處理進度</Label>
-                    <Input id="progress" placeholder="輸入處理進度" />
+                    <Label htmlFor="assetType">資產類型</Label>
+                    <Input id="assetType" placeholder="輸入資產類型" />
                   </div>
                 </div>
                 <Button type="submit">新增案件</Button>
