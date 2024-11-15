@@ -78,26 +78,28 @@ export function Dashboard() {
   return (
     <div className="min-h-screen bg-gray-100">
       <Header />
-      <main className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <AssetCard 
-            title="閒置資產" 
-            icon={<Home className="h-6 w-6" />} 
-            count={assetCounts.idle}
-            onClick={handleViewIdleAssets}
-          />
-          <AssetCard 
-            title="進行中案件" 
-            icon={<Briefcase className="h-6 w-6" />} 
-            count={assetCounts.inProgress}
-            onClick={() => console.log('查看進行中案件詳情')}
-          />
-          <AssetCard 
-            title="已活化資產" 
-            icon={<CheckSquare className="h-6 w-6" />} 
-            count={assetCounts.activated}
-            onClick={() => console.log('查看已活化資產詳情')}
-          />
+      <main className="container mx-auto px-4">
+        <div className="py-6">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <AssetCard 
+              title="閒置資產" 
+              icon={<Home className="h-6 w-6" />} 
+              count={assetCounts.idle}
+              onClick={handleViewIdleAssets}
+            />
+            <AssetCard 
+              title="進行中案件" 
+              icon={<Briefcase className="h-6 w-6" />} 
+              count={assetCounts.inProgress}
+              onClick={() => console.log('查看進行中案件詳情')}
+            />
+            <AssetCard 
+              title="已活化資產" 
+              icon={<CheckSquare className="h-6 w-6" />} 
+              count={assetCounts.activated}
+              onClick={() => console.log('查看已活化資產詳情')}
+            />
+          </div>
         </div>
       </main>
     </div>
