@@ -25,26 +25,37 @@ export function Dashboard() {
         }
 
         try {
-          const response = await fetch('http://localhost:8000/api/v1/idle', {
-            headers: {
-              'Authorization': `Bearer ${token}`
-            }
-          })
+          const [idleResponse, casesResponse, activatedResponse] = await Promise.all([
+            fetch('http://localhost:8000/api/v1/idle', {
+              headers: { 'Authorization': `Bearer ${token}` }
+            }),
+            fetch('http://localhost:8000/api/v1/cases', {
+              headers: { 'Authorization': `Bearer ${token}` }
+            }),
+            fetch('http://localhost:8000/api/v1/activated', {
+              headers: { 'Authorization': `Bearer ${token}` }
+            })
+          ])
 
-          if (!response.ok) {
-            throw new Error('Failed to fetch idle assets')
+          if (!idleResponse.ok || !casesResponse.ok || !activatedResponse.ok) {
+            throw new Error('Failed to fetch assets data')
           }
 
-          const data = await response.json()
+          const [idleData, casesData, activatedData] = await Promise.all([
+            idleResponse.json(),
+            casesResponse.json(),
+            activatedResponse.json()
+          ])
           
-          setAssetCounts(prev => ({
-            ...prev,
-            idle: data.length  // 假設 API 返回資產陣列
-          }))
+          setAssetCounts({
+            idle: idleData.length,
+            inProgress: casesData.length,
+            activated: activatedData.length
+          })
 
           setIsLoading(false)
         } catch (error) {
-          console.error('Error fetching idle assets:', error)
+          console.error('Error fetching assets data:', error)
           setIsLoading(false)
         }
       }
