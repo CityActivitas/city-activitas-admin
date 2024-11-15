@@ -16,7 +16,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Header } from "@/components/header"
 import { ScrollArea } from "@/components/ui/scroll-area"
-
+import { FilterBlock } from '@/components/filter-block'
 
 type Asset = {
   id: string
@@ -95,7 +95,8 @@ export function IdleAssetsDetailComponent() {
               <TabsTrigger value="add">新增資產</TabsTrigger>
             </TabsList>
             <TabsContent value="list">
-              <div className="relative rounded-md border">
+              <FilterBlock />
+              <div className="relative rounded-md border mt-4">
                 <div className="overflow-auto max-h-[70vh]">
                   <Table>
                     <TableHeader className="sticky top-0 bg-gray-100 z-10 font-bold">
