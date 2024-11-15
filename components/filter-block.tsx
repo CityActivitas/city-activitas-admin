@@ -12,10 +12,21 @@ import {
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Switch } from '@/components/ui/switch'
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group"
 
-export function FilterBlock() {
+interface FilterBlockProps {
+  onFilterChange: (filters: { isAssetIncluded: boolean, selectedAssetTypes: string[] }) => void
+}
+
+export function FilterBlock({ onFilterChange }: FilterBlockProps) {
   const [searchText, setSearchText] = React.useState('')
   const [isOpen, setIsOpen] = React.useState(false)
+  const [isAssetIncluded, setIsAssetIncluded] = React.useState(true)
+  const [selectedAssetTypes, setSelectedAssetTypes] = React.useState<string[]>(['building', 'land'])
+
+  React.useEffect(() => {
+    onFilterChange({ isAssetIncluded, selectedAssetTypes })
+  }, [isAssetIncluded, selectedAssetTypes, onFilterChange])
 
   return (
     <div className="border rounded-lg py-2 px-4 bg-white">
@@ -48,13 +59,24 @@ export function FilterBlock() {
               <h3 className="font-medium">資產種類</h3>
               <div className="space-y-4">
                 <div className="flex items-center gap-2">
-                  <Switch id="asset-toggle" />
-                  <Label htmlFor="asset-toggle">包含/不包含</Label>
+                  <Switch 
+                    id="asset-toggle" 
+                    checked={isAssetIncluded}
+                    onCheckedChange={setIsAssetIncluded}
+                  />
+                  <Label htmlFor="asset-toggle">
+                    {isAssetIncluded ? "包含" : "不包含"}
+                  </Label>
                 </div>
-                <div className="flex flex-wrap gap-2">
-                  <Button variant="outline" className="h-8">建物</Button>
-                  <Button variant="outline" className="h-8">土地</Button>
-                </div>
+                <ToggleGroup 
+                  type="multiple"
+                  value={selectedAssetTypes}
+                  onValueChange={setSelectedAssetTypes}
+                  className="flex justify-start gap-4"
+                >
+                  <ToggleGroupItem value="building" className="h-10 w-20 rounded-r-none">建物</ToggleGroupItem>
+                  <ToggleGroupItem value="land" className="h-10 w-20 rounded-l-none border-l-0">土地</ToggleGroupItem>
+                </ToggleGroup>
               </div>
             </div>
 

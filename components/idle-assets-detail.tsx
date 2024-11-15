@@ -33,6 +33,8 @@ export function IdleAssetsDetailComponent() {
   const [assets, setAssets] = useState<Asset[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const router = useRouter()
+  const [selectedAssetTypes, setSelectedAssetTypes] = useState<string[]>(['building', 'land'])
+  const [isAssetIncluded, setIsAssetIncluded] = useState(true)
 
   // console.log(assets)
 
@@ -83,6 +85,30 @@ export function IdleAssetsDetailComponent() {
     setAssets(assets.filter(asset => asset.id !== id))
   }
 
+  const handleFilterChange = ({ isAssetIncluded, selectedAssetTypes }: {
+    isAssetIncluded: boolean
+    selectedAssetTypes: string[]
+  }) => {
+    setIsAssetIncluded(isAssetIncluded)
+    setSelectedAssetTypes(selectedAssetTypes)
+  }
+
+  // 添加過濾資產的函數
+  const filteredAssets = assets.filter(asset => {
+    const assetType = asset['資產類型']
+    const isBuilding = assetType.includes('建物')
+    const isLand = assetType.includes('土地')
+    
+    // 判斷資產類型是否符合選擇條件
+    const matchesType = (
+      (isBuilding && selectedAssetTypes.includes('building')) ||
+      (isLand && selectedAssetTypes.includes('land'))
+    )
+    
+    // 根據 isAssetIncluded 決定是要包含還是排除
+    return isAssetIncluded ? matchesType : !matchesType
+  })
+
   return (
     <div className="min-h-screen bg-gray-100">
       <Header />
@@ -95,7 +121,17 @@ export function IdleAssetsDetailComponent() {
               <TabsTrigger value="add">新增資產</TabsTrigger>
             </TabsList>
             <TabsContent value="list">
-              <FilterBlock />
+              <FilterBlock onFilterChange={handleFilterChange} />
+              <div className="space-y-2">
+                <p className="text-sm text-gray-600">
+                  資產種類篩選條件：{isAssetIncluded ? "包含" : "不包含"}
+                  {selectedAssetTypes.map((type) => (
+                    <span key={type} className="ml-2 px-2 py-1 bg-gray-100 rounded text-sm">
+                      {type === 'building' ? '建物' : '土地'}
+                    </span>
+                  ))}
+                </p>
+              </div>
               <div className="relative rounded-md border mt-4">
                 <div className="overflow-auto max-h-[70vh]">
                   <Table>
@@ -112,7 +148,7 @@ export function IdleAssetsDetailComponent() {
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      {assets.map((asset) => (
+                      {filteredAssets.map((asset) => (
                         <TableRow key={asset.id}>
                           <TableCell>{asset['資產類型']}</TableCell>
                           <TableCell>{asset['管理機關']}</TableCell>
