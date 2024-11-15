@@ -46,7 +46,7 @@ export function ActivatedAssetsDetailComponent() {
   const [isLoading, setIsLoading] = useState(true)
   const router = useRouter()
 
-  console.log(assets)
+  // console.log(assets)
 
   useEffect(() => {
     const fetchActivatedAssets = async () => {
