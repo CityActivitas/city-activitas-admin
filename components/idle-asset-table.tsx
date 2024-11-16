@@ -30,6 +30,7 @@ interface IdleAssetTableProps {
   assets: Asset[]
   sortConfig: SortConfig
   onSort: (key: keyof Asset) => void
+  onRowClick: (assetId: string) => void
 }
 
 const SortIcon = ({ columnKey, sortConfig }: { columnKey: keyof Asset, sortConfig: SortConfig }) => {
@@ -45,7 +46,7 @@ const SortIcon = ({ columnKey, sortConfig }: { columnKey: keyof Asset, sortConfi
   )
 }
 
-export function IdleAssetTable({ assets, sortConfig, onSort }: IdleAssetTableProps) {
+export function IdleAssetTable({ assets, sortConfig, onSort, onRowClick }: IdleAssetTableProps) {
   return (
     <div className="relative rounded-md border mt-2">
       <div className="overflow-y-scroll max-h-[70vh]">
@@ -76,7 +77,11 @@ export function IdleAssetTable({ assets, sortConfig, onSort }: IdleAssetTablePro
           </TableHeader>
           <TableBody>
             {assets.map((asset) => (
-              <TableRow key={asset.id}>
+              <TableRow 
+                key={asset.id}
+                className="cursor-pointer hover:bg-gray-100"
+                onClick={() => onRowClick(asset.id)}
+              >
                 <TableCell>{asset['資產類型']}</TableCell>
                 <TableCell>{asset['管理機關']}</TableCell>
                 <TableCell>{asset['行政區']}</TableCell>

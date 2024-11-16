@@ -7,7 +7,6 @@ import { Label } from "@/components/ui/label"
 import { Card, CardContent } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { ArrowLeft } from 'lucide-react'
-import Link from "next/link"
 
 interface AssetData {
   assetId: string
@@ -43,29 +42,35 @@ interface LandRelationData {
   updatedAt: string
 }
 
-export function AssetDetail() {
+interface OneIdleAssetDetailProps {
+  assetId: string;
+  onBack: () => void;
+  assetData: Asset;
+}
+
+export function OneIdleAssetDetail({ assetId, onBack, assetData }: OneIdleAssetDetailProps) {
   const [formData, setFormData] = useState<AssetData>({
-    assetId: '24',
-    assetType: '建物',
-    department: '教育局',
-    district: '將軍區',
-    section: '大丘園段',
-    address: '',
+    assetId: assetData.id || '',
+    assetType: assetData['資產類型'] || '',
+    department: assetData['管理機關'] || '',
+    district: assetData['行政區'] || '',
+    section: assetData['地段'] || '',
+    address: assetData['地址'] || '',
     coordinates: '41.40338, 2.17403',
     areaCoordinates: '41.40338, 2.17403',
-    markerName: '歸仁市場2,3樓',
+    markerName: assetData['標的名稱'] || '',
     status: '未活化',
-    createdAt: '2024-11-23 23:30',
-    updatedAt: '2024-11-25 23:30',
-    buildingId: '19',
-    buildingNumber: '歸仁北段6932建號',
-    buildingType: '市有建物',
-    landArea: '2樓 3729',
-    usage: '市場用地',
-    landUsage: '特定目的事業用地',
-    condition: '空置',
-    vacancyRate: '100',
-    note: '2樓空置'
+    createdAt: assetData['建立時間'] || '',
+    updatedAt: '',
+    buildingId: '',
+    buildingNumber: '',
+    buildingType: '',
+    landArea: '',
+    usage: '',
+    landUsage: '',
+    condition: '',
+    vacancyRate: '',
+    note: ''
   })
 
   const [landRelationData, setLandRelationData] = useState<LandRelationData[]>([
@@ -112,9 +117,12 @@ export function AssetDetail() {
   return (
     <div className="container mx-auto p-4 space-y-4">
       <div className="flex items-center gap-2 text-lg font-medium">
-        <Link href="/assets" className="hover:text-primary">
+        <button 
+          onClick={onBack} 
+          className="hover:text-primary"
+        >
           <ArrowLeft className="w-5 h-5" />
-        </Link>
+        </button>
       </div>
 
       <Tabs defaultValue="asset-details" className="w-full">

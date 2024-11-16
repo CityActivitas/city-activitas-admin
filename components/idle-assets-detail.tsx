@@ -13,7 +13,7 @@ import { ChevronDown, ChevronUp } from "lucide-react"
 import { IdleAssetsFilterSummary } from '@/components/idle-assets-filter-summary'
 import { IdleAssetTable } from '@/components/idle-asset-table'
 import dynamic from 'next/dynamic'
-
+import { OneIdleAssetDetail } from '@/components/one-idle-asset-detail'
 // 動態引入 Header 元件，並停用 SSR
 const DynamicHeader = dynamic(() => import('@/components/header').then(mod => mod.Header), {
   ssr: false
@@ -48,6 +48,7 @@ export function IdleAssetsDetailComponent() {
   const [isOpen, setIsOpen] = useState(false)
   const [searchText, setSearchText] = useState('')
   const [sortConfig, setSortConfig] = useState<SortConfig>({ key: null, direction: 'asc' })
+  const [selectedAsset, setSelectedAsset] = useState<Asset | null>(null);
 
   useEffect(() => {
     const fetchIdleAssets = async () => {
@@ -175,6 +176,26 @@ export function IdleAssetsDetailComponent() {
 
   const sortedAssets = getSortedAssets(filteredAssets)
 
+  const handleRowClick = (assetId: string) => {
+    const asset = assets.find(a => a.id === assetId);
+    setSelectedAsset(asset || null);
+  };
+
+  if (selectedAsset) {
+    return (
+      <div className="min-h-screen bg-gray-200">
+        <DynamicHeader />
+        <div className="container mx-auto px-4 pt-24">
+          <OneIdleAssetDetail 
+            assetId={selectedAsset.id} 
+            onBack={() => setSelectedAsset(null)}
+            assetData={selectedAsset}
+          />
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-gray-200">
       <DynamicHeader />
@@ -204,6 +225,7 @@ export function IdleAssetsDetailComponent() {
                 assets={sortedAssets}
                 sortConfig={sortConfig}
                 onSort={handleSort}
+                onRowClick={handleRowClick}
               />
             </TabsContent>
             <TabsContent value="add">
