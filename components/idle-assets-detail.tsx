@@ -18,7 +18,7 @@ import { Header } from "@/components/header"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { FilterBlock } from '@/components/filter-block'
 import { Collapsible, CollapsibleTrigger, CollapsibleContent } from "@/components/ui/collapsible"
-import { ChevronDown } from "lucide-react"
+import { ChevronDown, ChevronUp } from "lucide-react"
 
 type Asset = {
   id: string
@@ -29,6 +29,11 @@ type Asset = {
   '地址': string
   '標的名稱': string
   '建立時間': string
+}
+
+type SortConfig = {
+  key: keyof Asset | null
+  direction: 'asc' | 'desc'
 }
 
 export function IdleAssetsDetailComponent() {
@@ -43,6 +48,7 @@ export function IdleAssetsDetailComponent() {
   const [selectedDistricts, setSelectedDistricts] = useState<string[]>([])
   const [isOpen, setIsOpen] = useState(false)
   const [searchText, setSearchText] = useState('')
+  const [sortConfig, setSortConfig] = useState<SortConfig>({ key: null, direction: 'asc' })
 
   // console.log(assets)
 
@@ -154,6 +160,47 @@ export function IdleAssetsDetailComponent() {
     return searchResult && assetTypeResult && agencyResult && districtResult
   })
 
+  const handleSort = (key: keyof Asset) => {
+    setSortConfig((prevSort) => ({
+      key,
+      direction: prevSort.key === key && prevSort.direction === 'asc' ? 'desc' : 'asc'
+    }))
+  }
+
+  const getSortedAssets = (assets: Asset[]) => {
+    if (!sortConfig.key) return assets
+
+    return [...assets].sort((a, b) => {
+      const aValue = a[sortConfig.key!]
+      const bValue = b[sortConfig.key!]
+
+      if (sortConfig.key === '建立時間') {
+        const aDate = new Date(aValue).getTime()
+        const bDate = new Date(bValue).getTime()
+        return sortConfig.direction === 'asc' ? aDate - bDate : bDate - aDate
+      }
+
+      if (aValue < bValue) return sortConfig.direction === 'asc' ? -1 : 1
+      if (aValue > bValue) return sortConfig.direction === 'asc' ? 1 : -1
+      return 0
+    })
+  }
+
+  const sortedAssets = getSortedAssets(filteredAssets)
+
+  const SortIcon = ({ columnKey }: { columnKey: keyof Asset }) => {
+    if (sortConfig.key !== columnKey) {
+      return (
+        <ChevronUp className="w-4 h-4 text-gray-400 opacity-0 group-hover:opacity-100" />
+      )
+    }
+    return sortConfig.direction === 'asc' ? (
+      <ChevronUp className="w-4 h-4" />
+    ) : (
+      <ChevronDown className="w-4 h-4" />
+    )
+  }
+
   return (
     <div className="min-h-screen bg-gray-100">
       <Header />
@@ -206,19 +253,32 @@ export function IdleAssetsDetailComponent() {
               <div className="relative rounded-md border mt-2">
                 <div className="overflow-y-scroll max-h-[70vh]">
                   <Table>
-                    <TableHeader className="sticky top-0 bg-gray-100 z-10 font-bold">
+                    <TableHeader className="sticky top-0 bg-gray-100 z-10">
                       <TableRow>
-                        <TableHead>資產類型</TableHead>
-                        <TableHead>管理機關</TableHead>
-                        <TableHead>行政區</TableHead>
-                        <TableHead>地段</TableHead>
-                        <TableHead>地址</TableHead>
-                        <TableHead>標的名稱</TableHead>
-                        <TableHead>建立時間</TableHead>
+                        {[
+                          ['資產類型', '資產類型'],
+                          ['管理機關', '管理機關'],
+                          ['行政區', '行政區'],
+                          ['地段', '地段'],
+                          ['地址', '地址'],
+                          ['標的名稱', '標的名稱'],
+                          ['建立時間', '建立時間']
+                        ].map(([label, key]) => (
+                          <TableHead 
+                            key={key}
+                            className="group cursor-pointer hover:bg-gray-200"
+                            onClick={() => handleSort(key as keyof Asset)}
+                          >
+                            <div className="flex items-center gap-1">
+                              {label}
+                              <SortIcon columnKey={key as keyof Asset} />
+                            </div>
+                          </TableHead>
+                        ))}
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      {filteredAssets.map((asset) => (
+                      {sortedAssets.map((asset) => (
                         <TableRow key={asset.id}>
                           <TableCell>{asset['資產類型']}</TableCell>
                           <TableCell>{asset['管理機關']}</TableCell>
