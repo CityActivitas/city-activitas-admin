@@ -151,13 +151,13 @@ export function FilterBlock({ onFilterChange, agencies, districts = [] }: Filter
                   type="multiple"
                   value={selectedDistricts}
                   onValueChange={setSelectedDistricts}
-                  className="flex flex-wrap gap-2"
+                  className="flex justify-start gap-4"
                 >
                   {districts.map((district) => (
                     <ToggleGroupItem 
                       key={district} 
                       value={district} 
-                      className="h-8"
+                      className="px-3 py-2 whitespace-nowrap"
                     >
                       {district}
                     </ToggleGroupItem>
