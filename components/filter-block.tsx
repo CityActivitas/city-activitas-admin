@@ -19,27 +19,34 @@ interface FilterBlockProps {
     isAssetIncluded: boolean, 
     selectedAssetTypes: string[],
     isAgencyIncluded: boolean,
-    selectedAgencies: string[] 
+    selectedAgencies: string[],
+    isDistrictIncluded: boolean,
+    selectedDistricts: string[]
   }) => void
   agencies: string[]
+  districts?: string[]
 }
 
-export function FilterBlock({ onFilterChange, agencies }: FilterBlockProps) {
+export function FilterBlock({ onFilterChange, agencies, districts = [] }: FilterBlockProps) {
   const [searchText, setSearchText] = React.useState('')
   const [isOpen, setIsOpen] = React.useState(false)
   const [isAssetIncluded, setIsAssetIncluded] = React.useState(true)
   const [selectedAssetTypes, setSelectedAssetTypes] = React.useState<string[]>(['building', 'land'])
   const [isAgencyIncluded, setIsAgencyIncluded] = React.useState(true)
   const [selectedAgencies, setSelectedAgencies] = React.useState<string[]>(agencies)
+  const [isDistrictIncluded, setIsDistrictIncluded] = React.useState(true)
+  const [selectedDistricts, setSelectedDistricts] = React.useState<string[]>(districts)
 
   React.useEffect(() => {
     onFilterChange({ 
       isAssetIncluded, 
       selectedAssetTypes,
       isAgencyIncluded,
-      selectedAgencies 
+      selectedAgencies,
+      isDistrictIncluded,
+      selectedDistricts
     })
-  }, [isAssetIncluded, selectedAssetTypes, isAgencyIncluded, selectedAgencies, onFilterChange])
+  }, [isAssetIncluded, selectedAssetTypes, isAgencyIncluded, selectedAgencies, isDistrictIncluded, selectedDistricts, onFilterChange])
 
   return (
     <div className="border rounded-lg py-2 px-4 bg-white">
@@ -131,16 +138,31 @@ export function FilterBlock({ onFilterChange, agencies }: FilterBlockProps) {
               <h3 className="font-medium">行政區</h3>
               <div className="space-y-4">
                 <div className="flex items-center gap-2">
-                  <Switch id="district-toggle" />
-                  <Label htmlFor="district-toggle">包含/不包含</Label>
+                  <Switch 
+                    id="district-toggle"
+                    checked={isDistrictIncluded}
+                    onCheckedChange={setIsDistrictIncluded}
+                  />
+                  <Label htmlFor="district-toggle">
+                    {isDistrictIncluded ? "包含" : "不包含"}
+                  </Label>
                 </div>
-                <div className="flex flex-wrap gap-2">
-                  {Array(18).fill(null).map((_, i) => (
-                    <Button key={`district-${i}`} variant="outline" className="h-8">
-                      {i % 2 === 0 ? '建物' : '土地'}
-                    </Button>
+                <ToggleGroup 
+                  type="multiple"
+                  value={selectedDistricts}
+                  onValueChange={setSelectedDistricts}
+                  className="flex flex-wrap gap-2"
+                >
+                  {districts.map((district) => (
+                    <ToggleGroupItem 
+                      key={district} 
+                      value={district} 
+                      className="h-8"
+                    >
+                      {district}
+                    </ToggleGroupItem>
                   ))}
-                </div>
+                </ToggleGroup>
               </div>
             </div>
           </div>

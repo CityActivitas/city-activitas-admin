@@ -37,6 +37,8 @@ export function IdleAssetsDetailComponent() {
   const [isAssetIncluded, setIsAssetIncluded] = useState(true)
   const [selectedAgencies, setSelectedAgencies] = useState<string[]>([])
   const [isAgencyIncluded, setIsAgencyIncluded] = useState(true)
+  const [isDistrictIncluded, setIsDistrictIncluded] = useState(true)
+  const [selectedDistricts, setSelectedDistricts] = useState<string[]>([])
 
   // console.log(assets)
 
@@ -87,24 +89,31 @@ export function IdleAssetsDetailComponent() {
     setAssets(assets.filter(asset => asset.id !== id))
   }
 
-  // 獲取唯一的管理機關列表
+  // 獲取唯一的管理機關和行政區列表
   const uniqueAgencies = Array.from(new Set(assets.map(asset => asset['管理機關'])))
+  const uniqueDistricts = Array.from(new Set(assets.map(asset => asset['行政區'])))
 
   const handleFilterChange = ({ 
     isAssetIncluded, 
     selectedAssetTypes,
     isAgencyIncluded,
-    selectedAgencies 
+    selectedAgencies,
+    isDistrictIncluded,
+    selectedDistricts
   }: {
     isAssetIncluded: boolean
     selectedAssetTypes: string[]
     isAgencyIncluded: boolean
     selectedAgencies: string[]
+    isDistrictIncluded: boolean
+    selectedDistricts: string[]
   }) => {
     setIsAssetIncluded(isAssetIncluded)
     setSelectedAssetTypes(selectedAssetTypes)
     setIsAgencyIncluded(isAgencyIncluded)
     setSelectedAgencies(selectedAgencies)
+    setIsDistrictIncluded(isDistrictIncluded)
+    setSelectedDistricts(selectedDistricts)
   }
 
   // 修改過濾邏輯
@@ -124,7 +133,12 @@ export function IdleAssetsDetailComponent() {
       selectedAgencies.includes(asset['管理機關'])
     const agencyResult = isAgencyIncluded ? matchesAgency : !matchesAgency
 
-    return assetTypeResult && agencyResult
+    // 行政區過濾
+    const matchesDistrict = selectedDistricts.length === 0 || 
+      selectedDistricts.includes(asset['行政區'])
+    const districtResult = isDistrictIncluded ? matchesDistrict : !matchesDistrict
+
+    return assetTypeResult && agencyResult && districtResult
   })
 
   return (
@@ -142,6 +156,7 @@ export function IdleAssetsDetailComponent() {
               <FilterBlock 
                 onFilterChange={handleFilterChange} 
                 agencies={uniqueAgencies}
+                districts={uniqueDistricts}
               />
               <div className="space-y-2 my-4">
                 <p className="text-sm text-gray-600">
@@ -157,6 +172,14 @@ export function IdleAssetsDetailComponent() {
                   {selectedAgencies.map((agency) => (
                     <span key={agency} className="ml-2 px-2 py-1 bg-gray-100 rounded text-sm">
                     {agency}
+                  </span>
+                ))}
+              </p>
+              <p className="text-sm text-gray-600">
+                行政區{isDistrictIncluded ? "包含" : "不包含"}：
+                {selectedDistricts.map((district) => (
+                  <span key={district} className="ml-2 px-2 py-1 bg-gray-100 rounded text-sm">
+                    {district}
                   </span>
                 ))}
               </p>
