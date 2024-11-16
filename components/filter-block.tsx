@@ -16,6 +16,7 @@ import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group"
 
 interface FilterBlockProps {
   onFilterChange: (filters: { 
+    searchText: string, 
     isAssetIncluded: boolean, 
     selectedAssetTypes: string[],
     isAgencyIncluded: boolean,
@@ -39,6 +40,7 @@ export function FilterBlock({ onFilterChange, agencies, districts = [] }: Filter
 
   React.useEffect(() => {
     onFilterChange({ 
+      searchText, 
       isAssetIncluded, 
       selectedAssetTypes,
       isAgencyIncluded,
@@ -46,7 +48,7 @@ export function FilterBlock({ onFilterChange, agencies, districts = [] }: Filter
       isDistrictIncluded,
       selectedDistricts
     })
-  }, [isAssetIncluded, selectedAssetTypes, isAgencyIncluded, selectedAgencies, isDistrictIncluded, selectedDistricts, onFilterChange])
+  }, [searchText, isAssetIncluded, selectedAssetTypes, isAgencyIncluded, selectedAgencies, isDistrictIncluded, selectedDistricts, onFilterChange])
 
   return (
     <div className="border rounded-lg py-2 px-4 bg-white">

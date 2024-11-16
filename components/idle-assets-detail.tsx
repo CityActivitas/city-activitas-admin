@@ -42,6 +42,7 @@ export function IdleAssetsDetailComponent() {
   const [isDistrictIncluded, setIsDistrictIncluded] = useState(true)
   const [selectedDistricts, setSelectedDistricts] = useState<string[]>([])
   const [isOpen, setIsOpen] = useState(false)
+  const [searchText, setSearchText] = useState('')
 
   // console.log(assets)
 
@@ -97,6 +98,7 @@ export function IdleAssetsDetailComponent() {
   const uniqueDistricts = Array.from(new Set(assets.map(asset => asset['行政區'])))
 
   const handleFilterChange = ({ 
+    searchText, 
     isAssetIncluded, 
     selectedAssetTypes,
     isAgencyIncluded,
@@ -104,6 +106,7 @@ export function IdleAssetsDetailComponent() {
     isDistrictIncluded,
     selectedDistricts
   }: {
+    searchText: string
     isAssetIncluded: boolean
     selectedAssetTypes: string[]
     isAgencyIncluded: boolean
@@ -111,6 +114,7 @@ export function IdleAssetsDetailComponent() {
     isDistrictIncluded: boolean
     selectedDistricts: string[]
   }) => {
+    setSearchText(searchText)
     setIsAssetIncluded(isAssetIncluded)
     setSelectedAssetTypes(selectedAssetTypes)
     setIsAgencyIncluded(isAgencyIncluded)
@@ -121,6 +125,12 @@ export function IdleAssetsDetailComponent() {
 
   // 修改過濾邏輯
   const filteredAssets = assets.filter(asset => {
+    // 文字搜尋過濾
+    const searchResult = searchText === '' || 
+      Object.values(asset).some(value => 
+        value?.toString().toLowerCase().includes(searchText.toLowerCase())
+      )
+
     // 資產類型過濾
     const assetType = asset['資產類型']
     const isBuilding = assetType.includes('建物')
@@ -141,7 +151,7 @@ export function IdleAssetsDetailComponent() {
       selectedDistricts.includes(asset['行政區'])
     const districtResult = isDistrictIncluded ? matchesDistrict : !matchesDistrict
 
-    return assetTypeResult && agencyResult && districtResult
+    return searchResult && assetTypeResult && agencyResult && districtResult
   })
 
   return (
