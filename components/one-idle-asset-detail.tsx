@@ -106,6 +106,8 @@ export function OneIdleAssetDetail({ assetId, onBack, assetData }: OneIdleAssetD
   }, [formData, originalData])
 
   useEffect(() => {
+    let isMounted = true;
+
     const fetchAssetDetails = async () => {
       const token = localStorage.getItem('access_token');
       if (!token) return;
@@ -126,6 +128,8 @@ export function OneIdleAssetDetail({ assetId, onBack, assetData }: OneIdleAssetD
 
         const detailData = await response.json();
         
+        if (!isMounted) return;
+
         if (isBuilding) {
           setFormData(prev => ({
             ...prev,
@@ -142,23 +146,29 @@ export function OneIdleAssetDetail({ assetId, onBack, assetData }: OneIdleAssetD
             landType: detailData['土地類型'] || ''
           }));
         } else {
-          // 土地資料的對應欄位
           setFormData(prev => ({
             ...prev,
-            // 根據 API 返回的土地數據設置相應欄位
-            landNumber: detailData.landNumber || '',
-            landType: detailData.landType || '',
-            landArea: detailData.landArea || '',
-            landUsage: detailData.landUsage || '',
-            // ... 其他土地相關欄位
+            landNumber: detailData['地號'] || '',
+            landType: detailData['土地類型'] || '',
+            landArea: detailData['面積(平方公尺)']?.toString() || '',
+            usage: detailData['使用分區'] || '',
+            landUsage: detailData['土地用途'] || '',
+            condition: detailData['現況'] || '',
+            vacancyRate: detailData['空置比例(%)']?.toString() || '',
+            note: detailData['備註'] || ''
           }));
         }
       } catch (error) {
+        if (!isMounted) return;
         console.error('Error fetching asset details:', error);
       }
     };
 
     fetchAssetDetails();
+
+    return () => {
+      isMounted = false;
+    };
   }, [assetId, assetData]);
 
   const handleInputChange = (field: keyof AssetData, value: string) => {
@@ -248,7 +258,55 @@ export function OneIdleAssetDetail({ assetId, onBack, assetData }: OneIdleAssetD
               onChange={(e) => handleInputChange('landNumber', e.target.value)}
             />
           </div>
-          {/* ... 其他土地欄位 ... */}
+          <div className="space-y-2">
+            <Label>土地類型</Label>
+            <Input 
+              value={formData.landType}
+              onChange={(e) => handleInputChange('landType', e.target.value)}
+            />
+          </div>
+          <div className="space-y-2">
+            <Label>面積(平方公尺)</Label>
+            <Input 
+              value={formData.landArea}
+              onChange={(e) => handleInputChange('landArea', e.target.value)}
+            />
+          </div>
+          <div className="space-y-2">
+            <Label>使用分區</Label>
+            <Input 
+              value={formData.usage}
+              onChange={(e) => handleInputChange('usage', e.target.value)}
+            />
+          </div>
+          <div className="space-y-2">
+            <Label>土地用途</Label>
+            <Input 
+              value={formData.landUsage}
+              onChange={(e) => handleInputChange('landUsage', e.target.value)}
+            />
+          </div>
+          <div className="space-y-2">
+            <Label>現況</Label>
+            <Input 
+              value={formData.condition}
+              onChange={(e) => handleInputChange('condition', e.target.value)}
+            />
+          </div>
+          <div className="space-y-2">
+            <Label>空置比例(%)</Label>
+            <Input 
+              value={formData.vacancyRate}
+              onChange={(e) => handleInputChange('vacancyRate', e.target.value)}
+            />
+          </div>
+          <div className="space-y-2 col-span-2">
+            <Label>備註</Label>
+            <Input 
+              value={formData.note}
+              onChange={(e) => handleInputChange('note', e.target.value)}
+            />
+          </div>
         </div>
       );
     }
