@@ -204,7 +204,7 @@ export function IdleAssetsDetailComponent() {
                 </CollapsibleContent>
               </Collapsible>
               <div className="relative rounded-md border mt-2">
-                <div className="overflow-auto max-h-[70vh]">
+                <div className="overflow-y-scroll max-h-[70vh]">
                   <Table>
                     <TableHeader className="sticky top-0 bg-gray-100 z-10 font-bold">
                       <TableRow>
