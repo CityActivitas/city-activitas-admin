@@ -16,10 +16,10 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Header } from "@/components/header"
 import { ScrollArea } from "@/components/ui/scroll-area"
-import { FilterBlock } from '@/components/filter-block'
+import { IdleAssetsFilter } from '@/components/idle-assets-filter'
 import { Collapsible, CollapsibleTrigger, CollapsibleContent } from "@/components/ui/collapsible"
 import { ChevronDown, ChevronUp } from "lucide-react"
-import { FilterSummary } from '@/components/filter-summary'
+import { IdleAssetsFilterSummary } from '@/components/idle-assets-filter-summary'
 
 type Asset = {
   id: string
@@ -50,8 +50,6 @@ export function IdleAssetsDetailComponent() {
   const [isOpen, setIsOpen] = useState(false)
   const [searchText, setSearchText] = useState('')
   const [sortConfig, setSortConfig] = useState<SortConfig>({ key: null, direction: 'asc' })
-
-  // console.log(assets)
 
   useEffect(() => {
     const fetchIdleAssets = async () => {
@@ -88,16 +86,6 @@ export function IdleAssetsDetailComponent() {
 
   if (isLoading) {
     return <div>載入中...</div>
-  }
-
-  const handleEdit = (id: string) => {
-    // 實現編輯邏輯
-    console.log(`Editing asset with id: ${id}`)
-  }
-
-  const handleDelete = (id: string) => {
-    // 實現刪除邏輯
-    setAssets(assets.filter(asset => asset.id !== id))
   }
 
   // 獲取唯一的管理機關和行政區列表
@@ -214,12 +202,12 @@ export function IdleAssetsDetailComponent() {
               <TabsTrigger value="add">新增資產</TabsTrigger>
             </TabsList>
             <TabsContent value="list">
-              <FilterBlock 
+              <IdleAssetsFilter 
                 onFilterChange={handleFilterChange} 
                 agencies={uniqueAgencies}
                 districts={uniqueDistricts}
               />
-              <FilterSummary 
+              <IdleAssetsFilterSummary 
                 isAssetIncluded={isAssetIncluded}
                 selectedAssetTypes={selectedAssetTypes}
                 isAgencyIncluded={isAgencyIncluded}
@@ -264,11 +252,10 @@ export function IdleAssetsDetailComponent() {
                           <TableCell>{asset['地址']}</TableCell>
                           <TableCell>{asset['標的名稱']}</TableCell>
                           <TableCell>
-                            {new Date(asset['建立時間']).toLocaleDateString('zh-TW', {
-                              year: 'numeric',
-                              month: '2-digit',
-                              day: '2-digit'
-                            }).replace(/\//g, '-')}
+                            {new Date(asset['建立時間'])
+                              .toISOString()
+                              .split('T')[0]
+                            }
                           </TableCell>
                         </TableRow>
                       ))}

@@ -16,7 +16,7 @@ interface FilterSummaryProps {
   selectedDistricts: string[]
 }
 
-export function FilterSummary({
+export function IdleAssetsFilterSummary({
   isAssetIncluded,
   selectedAssetTypes,
   isAgencyIncluded,

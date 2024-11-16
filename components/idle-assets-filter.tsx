@@ -28,7 +28,7 @@ interface FilterBlockProps {
   districts?: string[]
 }
 
-export function FilterBlock({ onFilterChange, agencies, districts = [] }: FilterBlockProps) {
+export function IdleAssetsFilter({ onFilterChange, agencies, districts = [] }: FilterBlockProps) {
   const [searchText, setSearchText] = React.useState('')
   const [isOpen, setIsOpen] = React.useState(false)
   const [isAssetIncluded, setIsAssetIncluded] = React.useState(true)
