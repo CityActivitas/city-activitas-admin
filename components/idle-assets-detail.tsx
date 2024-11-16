@@ -4,22 +4,20 @@ import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Button } from "@/components/ui/button"
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Header } from "@/components/header"
-import { ScrollArea } from "@/components/ui/scroll-area"
 import { IdleAssetsFilter } from '@/components/idle-assets-filter'
 import { Collapsible, CollapsibleTrigger, CollapsibleContent } from "@/components/ui/collapsible"
 import { ChevronDown, ChevronUp } from "lucide-react"
 import { IdleAssetsFilterSummary } from '@/components/idle-assets-filter-summary'
+import { IdleAssetTable } from '@/components/idle-asset-table'
+import dynamic from 'next/dynamic'
+
+// 動態引入 Header 元件，並停用 SSR
+const DynamicHeader = dynamic(() => import('@/components/header').then(mod => mod.Header), {
+  ssr: false
+})
 
 type Asset = {
   id: string
@@ -177,22 +175,9 @@ export function IdleAssetsDetailComponent() {
 
   const sortedAssets = getSortedAssets(filteredAssets)
 
-  const SortIcon = ({ columnKey }: { columnKey: keyof Asset }) => {
-    if (sortConfig.key !== columnKey) {
-      return (
-        <ChevronUp className="w-4 h-4 text-gray-400 opacity-0 group-hover:opacity-100" />
-      )
-    }
-    return sortConfig.direction === 'asc' ? (
-      <ChevronUp className="w-4 h-4" />
-    ) : (
-      <ChevronDown className="w-4 h-4" />
-    )
-  }
-
   return (
-    <div className="min-h-screen bg-gray-100">
-      <Header />
+    <div className="min-h-screen bg-gray-200">
+      <DynamicHeader />
       <div className="container mx-auto px-4 pt-24">
         <div className="py-6">
           <h1 className="text-2xl font-bold mb-4">閒置資產共{assets.length}筆</h1>
@@ -215,54 +200,11 @@ export function IdleAssetsDetailComponent() {
                 isDistrictIncluded={isDistrictIncluded}
                 selectedDistricts={selectedDistricts}
               />
-              <div className="relative rounded-md border mt-2">
-                <div className="overflow-y-scroll max-h-[70vh]">
-                  <Table>
-                    <TableHeader className="sticky top-0 bg-gray-100 z-10">
-                      <TableRow>
-                        {[
-                          ['資產類型', '資產類型'],
-                          ['管理機關', '管理機關'],
-                          ['行政區', '行政區'],
-                          ['地段', '地段'],
-                          ['地址', '地址'],
-                          ['標的名稱', '標的名稱'],
-                          ['建立時間', '建立時間']
-                        ].map(([label, key]) => (
-                          <TableHead 
-                            key={key}
-                            className="group cursor-pointer hover:bg-gray-200"
-                            onClick={() => handleSort(key as keyof Asset)}
-                          >
-                            <div className="flex items-center gap-1">
-                              {label}
-                              <SortIcon columnKey={key as keyof Asset} />
-                            </div>
-                          </TableHead>
-                        ))}
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {sortedAssets.map((asset) => (
-                        <TableRow key={asset.id}>
-                          <TableCell>{asset['資產類型']}</TableCell>
-                          <TableCell>{asset['管理機關']}</TableCell>
-                          <TableCell>{asset['行政區']}</TableCell>
-                          <TableCell>{asset['地段']}</TableCell>
-                          <TableCell>{asset['地址']}</TableCell>
-                          <TableCell>{asset['標的名稱']}</TableCell>
-                          <TableCell>
-                            {new Date(asset['建立時間'])
-                              .toISOString()
-                              .split('T')[0]
-                            }
-                          </TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                </div>
-              </div>
+              <IdleAssetTable 
+                assets={sortedAssets}
+                sortConfig={sortConfig}
+                onSort={handleSort}
+              />
             </TabsContent>
             <TabsContent value="add">
               <form className="space-y-4">
