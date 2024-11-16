@@ -227,7 +227,13 @@ export function IdleAssetsDetailComponent() {
                           <TableCell>{asset['地段']}</TableCell>
                           <TableCell>{asset['地址']}</TableCell>
                           <TableCell>{asset['標的名稱']}</TableCell>
-                          <TableCell>{asset['建立時間']}</TableCell>
+                          <TableCell>
+                            {new Date(asset['建立時間']).toLocaleDateString('zh-TW', {
+                              year: 'numeric',
+                              month: '2-digit',
+                              day: '2-digit'
+                            }).replace(/\//g, '-')}
+                          </TableCell>
                           <TableCell>
                             <Button variant="outline" size="sm" className="mr-2" onClick={() => handleEdit(asset.id)}>
                               修改
