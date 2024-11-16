@@ -50,13 +50,35 @@ export function FilterBlock({ onFilterChange, agencies, districts = [] }: Filter
     })
   }, [searchText, isAssetIncluded, selectedAssetTypes, isAgencyIncluded, selectedAgencies, isDistrictIncluded, selectedDistricts, onFilterChange])
 
+  const handleReset = () => {
+    setSearchText('')
+    setIsAssetIncluded(true)
+    setSelectedAssetTypes(['building', 'land'])
+    setIsAgencyIncluded(true)
+    setSelectedAgencies(agencies)
+    setIsDistrictIncluded(true)
+    setSelectedDistricts(districts)
+  }
+
   return (
     <div className="border rounded-lg py-2 px-4 bg-white">
       <Collapsible open={isOpen} onOpenChange={setIsOpen}>
-        <CollapsibleTrigger className="flex items-center gap-2">
-          <ChevronDown className={`h-4 w-4 transform ${isOpen ? 'rotate-0' : '-rotate-90'} transition-transform`} />
-          <span className="font-medium">條件篩選</span>
-        </CollapsibleTrigger>
+        <div className="flex items-center justify-between">
+          <CollapsibleTrigger className="flex items-center gap-2">
+            <ChevronDown className={`h-4 w-4 transform ${isOpen ? 'rotate-0' : '-rotate-90'} transition-transform`} />
+            <span className="font-medium">條件篩選</span>
+          </CollapsibleTrigger>
+          {isOpen && (
+            <Button 
+              variant="outline" 
+              size="sm"
+              onClick={handleReset}
+              className="text-gray-500"
+            >
+              重設條件
+            </Button>
+          )}
+        </div>
         <CollapsibleContent>
           {/* Search Input - Move to top */}
           <div className="flex gap-2 pt-4 pb-6">
