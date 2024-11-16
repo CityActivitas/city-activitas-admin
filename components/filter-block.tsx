@@ -58,26 +58,26 @@ export function FilterBlock({ onFilterChange, agencies, districts = [] }: Filter
           <span className="font-medium">條件篩選</span>
         </CollapsibleTrigger>
         <CollapsibleContent>
-          <div className="space-y-6">
-            {/* Search Input */}
-            <div className="flex gap-2">
-              <Input
-                placeholder="輸入要過濾的文字"
-                value={searchText}
-                onChange={(e) => setSearchText(e.target.value)}
-                className="flex-1"
-              />
-              <Button
-                variant="outline"
-                onClick={() => setSearchText('')}
-                className="shrink-0"
-              >
-                清除
-              </Button>
-            </div>
+          {/* Search Input - Move to top */}
+          <div className="flex gap-2 pt-4 pb-6">
+            <Input
+              placeholder="輸入要過濾的文字"
+              value={searchText}
+              onChange={(e) => setSearchText(e.target.value)}
+              className="flex-1"
+            />
+            <Button
+              variant="outline"
+              onClick={() => setSearchText('')}
+              className="shrink-0"
+            >
+              清除
+            </Button>
+          </div>
 
+          <div className="grid grid-cols-1 md:grid-cols-[auto_1fr_1fr] gap-6 divide-x divide-gray-200">
             {/* Asset Type Section */}
-            <div className="space-y-2">
+            <div className="space-y-2 md:pr-6">
               <h3 className="font-medium">資產種類</h3>
               <div className="space-y-4">
                 <div className="flex items-center gap-2">
@@ -94,16 +94,16 @@ export function FilterBlock({ onFilterChange, agencies, districts = [] }: Filter
                   type="multiple"
                   value={selectedAssetTypes}
                   onValueChange={setSelectedAssetTypes}
-                  className="flex justify-start gap-4"
+                  className="flex flex-col gap-2"
                 >
-                  <ToggleGroupItem value="building" className="h-8 rounded-r-none">建物</ToggleGroupItem>
-                  <ToggleGroupItem value="land" className="h-8 rounded-l-none border-l-0">土地</ToggleGroupItem>
+                  <ToggleGroupItem value="building" className="h-8 justify-start px-3">建物</ToggleGroupItem>
+                  <ToggleGroupItem value="land" className="h-8 justify-start px-3">土地</ToggleGroupItem>
                 </ToggleGroup>
               </div>
             </div>
 
             {/* Management Agency Section */}
-            <div className="space-y-2">
+            <div className="space-y-2 md:px-6">
               <h3 className="font-medium">管理機關</h3>
               <div className="space-y-4">
                 <div className="flex items-center gap-2">
@@ -120,13 +120,13 @@ export function FilterBlock({ onFilterChange, agencies, districts = [] }: Filter
                   type="multiple"
                   value={selectedAgencies}
                   onValueChange={setSelectedAgencies}
-                  className="flex justify-start gap-4"
+                  className="flex flex-wrap gap-2"
                 >
                   {agencies.map((agency) => (
                     <ToggleGroupItem 
                       key={agency} 
                       value={agency} 
-                      className="h-8"
+                      className="h-8 justify-start px-3"
                     >
                       {agency}
                     </ToggleGroupItem>
@@ -136,7 +136,7 @@ export function FilterBlock({ onFilterChange, agencies, districts = [] }: Filter
             </div>
 
             {/* Administrative District Section */}
-            <div className="space-y-2">
+            <div className="space-y-2 md:pl-6">
               <h3 className="font-medium">行政區</h3>
               <div className="space-y-4">
                 <div className="flex items-center gap-2">
@@ -153,13 +153,13 @@ export function FilterBlock({ onFilterChange, agencies, districts = [] }: Filter
                   type="multiple"
                   value={selectedDistricts}
                   onValueChange={setSelectedDistricts}
-                  className="flex justify-start gap-4"
+                  className="flex flex-wrap gap-2"
                 >
                   {districts.map((district) => (
                     <ToggleGroupItem 
                       key={district} 
                       value={district} 
-                      className="px-3 py-2 whitespace-nowrap"
+                      className="h-8 justify-start px-3"
                     >
                       {district}
                     </ToggleGroupItem>
