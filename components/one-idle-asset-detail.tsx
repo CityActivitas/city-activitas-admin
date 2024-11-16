@@ -30,6 +30,8 @@ interface AssetData {
   condition: string
   vacancyRate: string
   note: string
+  landNumber: string
+  landType: string
 }
 
 interface LandRelationData {
@@ -70,7 +72,9 @@ export function OneIdleAssetDetail({ assetId, onBack, assetData }: OneIdleAssetD
     landUsage: '',
     condition: '',
     vacancyRate: '',
-    note: ''
+    note: '',
+    landNumber: '',
+    landType: ''
   })
 
   const [landRelationData, setLandRelationData] = useState<LandRelationData[]>([
@@ -101,6 +105,62 @@ export function OneIdleAssetDetail({ assetId, onBack, assetData }: OneIdleAssetD
     setIsModified(JSON.stringify(formData) !== JSON.stringify(originalData))
   }, [formData, originalData])
 
+  useEffect(() => {
+    const fetchAssetDetails = async () => {
+      const token = localStorage.getItem('access_token');
+      if (!token) return;
+
+      const isBuilding = assetData['資產類型'].includes('建物');
+      const endpoint = isBuilding 
+        ? `http://localhost:8000/api/v1/idle/buildings/${assetId}`
+        : `http://localhost:8000/api/v1/idle/lands/${assetId}`;
+
+      try {
+        const response = await fetch(endpoint, {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
+
+        if (!response.ok) throw new Error('Failed to fetch asset details');
+
+        const detailData = await response.json();
+        
+        if (isBuilding) {
+          setFormData(prev => ({
+            ...prev,
+            buildingId: detailData['資產ID']?.toString() || '',
+            buildingNumber: detailData['建號'] || '',
+            buildingType: detailData['建物類型'] || '',
+            landArea: detailData['樓地板面積'] || '',
+            usage: detailData['使用分區'] || '',
+            landUsage: detailData['土地使用'] || '',
+            condition: detailData['使用現況'] || '',
+            vacancyRate: detailData['空置比例(%)']?.toString() || '',
+            note: detailData['建物備註'] || '',
+            landNumber: detailData['宗地地號'] || '',
+            landType: detailData['土地類型'] || ''
+          }));
+        } else {
+          // 土地資料的對應欄位
+          setFormData(prev => ({
+            ...prev,
+            // 根據 API 返回的土地數據設置相應欄位
+            landNumber: detailData.landNumber || '',
+            landType: detailData.landType || '',
+            landArea: detailData.landArea || '',
+            landUsage: detailData.landUsage || '',
+            // ... 其他土地相關欄位
+          }));
+        }
+      } catch (error) {
+        console.error('Error fetching asset details:', error);
+      }
+    };
+
+    fetchAssetDetails();
+  }, [assetId, assetData]);
+
   const handleInputChange = (field: keyof AssetData, value: string) => {
     setFormData(prev => ({
       ...prev,
@@ -113,6 +173,86 @@ export function OneIdleAssetDetail({ assetId, onBack, assetData }: OneIdleAssetD
     setOriginalData(formData)
     setIsModified(false)
   }
+
+  const renderDetailFields = () => {
+    const isBuilding = assetData['資產類型'].includes('建物');
+    
+    if (isBuilding) {
+      return (
+        <div className="grid grid-cols-2 gap-4">
+          <div className="space-y-2">
+            <Label>建號</Label>
+            <Input 
+              value={formData.buildingNumber}
+              onChange={(e) => handleInputChange('buildingNumber', e.target.value)}
+            />
+          </div>
+          <div className="space-y-2">
+            <Label>建物種類</Label>
+            <Input 
+              value={formData.buildingType}
+              onChange={(e) => handleInputChange('buildingType', e.target.value)}
+            />
+          </div>
+          <div className="space-y-2">
+            <Label>樓地板面積</Label>
+            <Input 
+              value={formData.landArea}
+              onChange={(e) => handleInputChange('landArea', e.target.value)}
+            />
+          </div>
+          <div className="space-y-2">
+            <Label>使用分區</Label>
+            <Input 
+              value={formData.usage}
+              onChange={(e) => handleInputChange('usage', e.target.value)}
+            />
+          </div>
+          <div className="space-y-2">
+            <Label>土地用途</Label>
+            <Input 
+              value={formData.landUsage}
+              onChange={(e) => handleInputChange('landUsage', e.target.value)}
+            />
+          </div>
+          <div className="space-y-2">
+            <Label>現況</Label>
+            <Input 
+              value={formData.condition}
+              onChange={(e) => handleInputChange('condition', e.target.value)}
+            />
+          </div>
+          <div className="space-y-2">
+            <Label>空置比例</Label>
+            <Input 
+              value={formData.vacancyRate}
+              onChange={(e) => handleInputChange('vacancyRate', e.target.value)}
+            />
+          </div>
+          <div className="space-y-2 col-span-2">
+            <Label>備註</Label>
+            <Input 
+              value={formData.note}
+              onChange={(e) => handleInputChange('note', e.target.value)}
+            />
+          </div>
+        </div>
+      );
+    } else {
+      return (
+        <div className="grid grid-cols-2 gap-4">
+          <div className="space-y-2">
+            <Label>地號</Label>
+            <Input 
+              value={formData.landNumber}
+              onChange={(e) => handleInputChange('landNumber', e.target.value)}
+            />
+          </div>
+          {/* ... 其他土地欄位 ... */}
+        </div>
+      );
+    }
+  };
 
   return (
     <div className="container mx-auto p-4 space-y-4">
@@ -225,71 +365,7 @@ export function OneIdleAssetDetail({ assetId, onBack, assetData }: OneIdleAssetD
 
             <Card>
               <CardContent className="p-4 space-y-4">
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label>建物ID</Label>
-                    <Input 
-                      value={formData.buildingId}
-                      onChange={(e) => handleInputChange('buildingId', e.target.value)}
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label>建號</Label>
-                    <Input 
-                      value={formData.buildingNumber}
-                      onChange={(e) => handleInputChange('buildingNumber', e.target.value)}
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label>建物種類</Label>
-                    <Input 
-                      value={formData.buildingType}
-                      onChange={(e) => handleInputChange('buildingType', e.target.value)}
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label>樓地板面積</Label>
-                    <Input 
-                      value={formData.landArea}
-                      onChange={(e) => handleInputChange('landArea', e.target.value)}
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label>使用分區</Label>
-                    <Input 
-                      value={formData.usage}
-                      onChange={(e) => handleInputChange('usage', e.target.value)}
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label>土地用途</Label>
-                    <Input 
-                      value={formData.landUsage}
-                      onChange={(e) => handleInputChange('landUsage', e.target.value)}
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label>現況</Label>
-                    <Input 
-                      value={formData.condition}
-                      onChange={(e) => handleInputChange('condition', e.target.value)}
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label>空置比例</Label>
-                    <Input 
-                      value={formData.vacancyRate}
-                      onChange={(e) => handleInputChange('vacancyRate', e.target.value)}
-                    />
-                  </div>
-                  <div className="col-span-2 space-y-2">
-                    <Label>備註</Label>
-                    <Input 
-                      value={formData.note}
-                      onChange={(e) => handleInputChange('note', e.target.value)}
-                    />
-                  </div>
-                </div>
+                {renderDetailFields()}
 
                 <div className="flex justify-end gap-2">
                   <Button 
