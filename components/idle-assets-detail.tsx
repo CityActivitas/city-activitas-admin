@@ -19,6 +19,7 @@ import { ScrollArea } from "@/components/ui/scroll-area"
 import { FilterBlock } from '@/components/filter-block'
 import { Collapsible, CollapsibleTrigger, CollapsibleContent } from "@/components/ui/collapsible"
 import { ChevronDown, ChevronUp } from "lucide-react"
+import { FilterSummary } from '@/components/filter-summary'
 
 type Asset = {
   id: string
@@ -218,38 +219,14 @@ export function IdleAssetsDetailComponent() {
                 agencies={uniqueAgencies}
                 districts={uniqueDistricts}
               />
-              <Collapsible className="border rounded-lg py-2 px-4 bg-white mt-2">
-                <CollapsibleTrigger className="flex items-center gap-2">
-                  <ChevronDown className={`h-4 w-4 transform ${isOpen ? 'rotate-0' : '-rotate-90'} transition-transform`} />
-                  <span className="font-medium">篩選器摘要</span>
-                </CollapsibleTrigger>
-                <CollapsibleContent>
-                  <p className="text-sm text-gray-600 flex flex-wrap items-center mt-2">
-                    資產種類{isAssetIncluded ? "包含" : "不包含"}：
-                    {selectedAssetTypes.map((type) => (
-                      <span key={type} className="ml-2 bg-gray-100 rounded-md text-sm">
-                        {type === 'building' ? '建物' : '土地'}
-                      </span>
-                    ))}
-                  </p>
-                  <p className="text-sm text-gray-600 flex flex-wrap items-center mt-2">
-                    管理機關{isAgencyIncluded ? "包含" : "不包含"}：
-                    {selectedAgencies.map((agency) => (
-                      <span key={agency} className="ml-2 bg-gray-100 rounded-md text-sm">
-                        {agency}
-                      </span>
-                    ))}
-                  </p>
-                  <p className="text-sm text-gray-600 flex flex-wrap items-center mt-2">
-                    行政區{isDistrictIncluded ? "包含" : "不包含"}：
-                    {selectedDistricts.map((district) => (
-                      <span key={district} className="ml-2 bg-gray-100 rounded-md text-sm">
-                        {district}
-                      </span>
-                    ))}
-                  </p>
-                </CollapsibleContent>
-              </Collapsible>
+              <FilterSummary 
+                isAssetIncluded={isAssetIncluded}
+                selectedAssetTypes={selectedAssetTypes}
+                isAgencyIncluded={isAgencyIncluded}
+                selectedAgencies={selectedAgencies}
+                isDistrictIncluded={isDistrictIncluded}
+                selectedDistricts={selectedDistricts}
+              />
               <div className="relative rounded-md border mt-2">
                 <div className="overflow-y-scroll max-h-[70vh]">
                   <Table>
