@@ -195,7 +195,7 @@ export function IdleAssetsDetailComponent() {
       <Header />
       <div className="container mx-auto px-4 pt-24">
         <div className="py-6">
-          <h1 className="text-2xl font-bold mb-4">閒置資產詳情</h1>
+          <h1 className="text-2xl font-bold mb-4">閒置資產共{assets.length}筆</h1>
           <Tabs defaultValue="list" className="w-full">
             <TabsList className="grid w-full grid-cols-2">
               <TabsTrigger value="list">閒置資產列表</TabsTrigger>
