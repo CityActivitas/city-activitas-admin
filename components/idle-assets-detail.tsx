@@ -215,7 +215,6 @@ export function IdleAssetsDetailComponent() {
                         <TableHead>地址</TableHead>
                         <TableHead>標的名稱</TableHead>
                         <TableHead>建立時間</TableHead>
-                        <TableHead className="font-bold">操作</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -233,14 +232,6 @@ export function IdleAssetsDetailComponent() {
                               month: '2-digit',
                               day: '2-digit'
                             }).replace(/\//g, '-')}
-                          </TableCell>
-                          <TableCell>
-                            <Button variant="outline" size="sm" className="mr-2" onClick={() => handleEdit(asset.id)}>
-                              修改
-                            </Button>
-                            <Button variant="destructive" size="sm" onClick={() => handleDelete(asset.id)}>
-                              刪除
-                            </Button>
                           </TableCell>
                         </TableRow>
                       ))}
