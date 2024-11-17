@@ -19,6 +19,7 @@ interface Asset {
   '建立時間': string;
 }
 
+// 資產細項 
 interface AssetData {
   assetId: string
   assetType: string
@@ -45,6 +46,7 @@ interface AssetData {
   landType: string
 }
 
+// 建物土地關聯細項
 interface LandRelationData {
   id: string;
   landNumber: string;  // lot_number
@@ -123,32 +125,40 @@ export function OneIdleAssetDetail({ assetId, onBack, assetData }: OneIdleAssetD
         if (!isMounted) return;
 
         if (isBuilding) {
-          setFormData(prev => ({
-            ...prev,
-            buildingId: detailData['資產ID']?.toString() || '',
-            buildingNumber: detailData['建號'] || '',
-            buildingType: detailData['建物類型'] || '',
-            landArea: detailData['樓地板面積'] || '',
-            usage: detailData['使用分區'] || '',
-            landUsage: detailData['土地使用'] || '',
-            condition: detailData['使用現況'] || '',
-            vacancyRate: detailData['空置比例(%)']?.toString() || '',
-            note: detailData['建物備註'] || '',
-            landNumber: detailData['宗地地號'] || '',
-            landType: detailData['土地類型'] || ''
-          }));
+          setFormData(prev => {
+            const newData = {
+              ...prev,
+              buildingId: detailData['資產ID']?.toString() || '',
+              buildingNumber: detailData['建號'] || '',
+              buildingType: detailData['建物類型'] || '',
+              landArea: detailData['樓地板面積'] || '',
+              usage: detailData['使用分區'] || '',
+              landUsage: detailData['土地使用'] || '',
+              condition: detailData['使用現況'] || '',
+              vacancyRate: detailData['空置比例(%)']?.toString() || '',
+              note: detailData['建物備註'] || '',
+              landNumber: detailData['宗地地號'] || '',
+              landType: detailData['土地類型'] || ''
+            };
+            setOriginalData(newData);
+            return newData;
+          });
         } else {
-          setFormData(prev => ({
-            ...prev,
-            landNumber: detailData['地號'] || '',
-            landType: detailData['土地類型'] || '',
-            landArea: detailData['面積(平方公尺)']?.toString() || '',
-            usage: detailData['使用分區'] || '',
-            landUsage: detailData['土地用途'] || '',
-            condition: detailData['現況'] || '',
-            vacancyRate: detailData['空置比例(%)']?.toString() || '',
-            note: detailData['備註'] || ''
-          }));
+          setFormData(prev => {
+            const newData = {
+              ...prev,
+              landNumber: detailData['地號'] || '',
+              landType: detailData['土地類型'] || '',
+              landArea: detailData['面積(平方公尺)']?.toString() || '',
+              usage: detailData['使用分區'] || '',
+              landUsage: detailData['土地用途'] || '',
+              condition: detailData['現況'] || '',
+              vacancyRate: detailData['空置比例(%)']?.toString() || '',
+              note: detailData['備註'] || ''
+            };
+            setOriginalData(newData);
+            return newData;
+          });
         }
       } catch (error) {
         if (!isMounted) return;
