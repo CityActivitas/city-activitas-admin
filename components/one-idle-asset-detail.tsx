@@ -77,6 +77,7 @@ export function OneIdleAssetDetail({ assetId, onBack, assetData }: OneIdleAssetD
   })
 
   const [landRelationData, setLandRelationData] = useState<LandRelationData[]>([])
+  const [hasLandRelations, setHasLandRelations] = useState<boolean>(false)
 
   const [originalData, setOriginalData] = useState<AssetData>(formData)
   const [isModified, setIsModified] = useState(false)
@@ -181,8 +182,10 @@ export function OneIdleAssetDetail({ assetId, onBack, assetData }: OneIdleAssetD
         }));
 
         setLandRelationData(formattedData);
+        setHasLandRelations(formattedData.length > 0);
       } catch (error) {
         console.error('Error fetching land relations:', error);
+        setHasLandRelations(false);
       }
     };
 
@@ -350,7 +353,9 @@ export function OneIdleAssetDetail({ assetId, onBack, assetData }: OneIdleAssetD
       <Tabs defaultValue="asset-details" className="w-full">
         <TabsList className="grid w-full grid-cols-2">
           <TabsTrigger value="asset-details">資產細項</TabsTrigger>
-          <TabsTrigger value="land-relations">建物土地關聯細項</TabsTrigger>
+          {hasLandRelations && (
+            <TabsTrigger value="land-relations">建物土地關聯細項</TabsTrigger>
+          )}
         </TabsList>
         <TabsContent value="asset-details">
           <div className="grid lg:grid-cols-2 gap-4">
