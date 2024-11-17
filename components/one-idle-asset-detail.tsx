@@ -387,14 +387,14 @@ export function OneIdleAssetDetail({ assetId, onBack, assetData }: OneIdleAssetD
                     <Label>資產ID</Label>
                     <Input 
                       value={formData.assetId}
-                      onChange={(e) => handleInputChange('assetId', e.target.value)}
+                      readOnly
                     />
                   </div>
                   <div className="space-y-2">
                     <Label>資產種類</Label>
                     <Input 
                       value={formData.assetType}
-                      onChange={(e) => handleInputChange('assetType', e.target.value)}
+                      readOnly
                     />
                   </div>
                   <div className="space-y-2">
@@ -457,14 +457,14 @@ export function OneIdleAssetDetail({ assetId, onBack, assetData }: OneIdleAssetD
                     <Label>建立時間</Label>
                     <Input 
                       value={formData.createdAt}
-                      onChange={(e) => handleInputChange('createdAt', e.target.value)}
+                      readOnly
                     />
                   </div>
                   <div className="space-y-2">
                     <Label>修改時間</Label>
                     <Input 
                       value={formData.updatedAt}
-                      onChange={(e) => handleInputChange('updatedAt', e.target.value)}
+                      readOnly
                     />
                   </div>
                 </div>
