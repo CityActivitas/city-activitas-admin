@@ -479,6 +479,7 @@ export function OneIdleAssetDetail({ assetId, onBack, assetData }: OneIdleAssetD
                   <Button 
                     variant="outline" 
                     onClick={() => setFormData(originalData)}
+                    disabled={!isModified}
                   >
                     取消
                   </Button>
