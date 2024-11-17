@@ -35,13 +35,12 @@ interface AssetData {
 }
 
 interface LandRelationData {
-  id: string
-  landNumber: string
-  landType: string
-  landManager: string
-  landSection: string
-  createdAt: string
-  updatedAt: string
+  id: string;
+  landNumber: string;  // lot_number
+  landType: string;    // land_type
+  landManager: string; // land_manager
+  createdAt: string;   // created_at
+  updatedAt: string;   // updated_at
 }
 
 interface OneIdleAssetDetailProps {
@@ -77,26 +76,7 @@ export function OneIdleAssetDetail({ assetId, onBack, assetData }: OneIdleAssetD
     landType: ''
   })
 
-  const [landRelationData, setLandRelationData] = useState<LandRelationData[]>([
-    {
-      id: '2',
-      landNumber: '234',
-      landType: '私有土地',
-      landManager: '財稅局',
-      landSection: '大丘園段',
-      createdAt: '2024-11-23 23:30',
-      updatedAt: '2024-11-25 23:30'
-    },
-    {
-      id: '3',
-      landNumber: '234',
-      landType: '私有土地',
-      landManager: '財稅局',
-      landSection: '大丘園段',
-      createdAt: '2024-11-23 23:30',
-      updatedAt: '2024-11-25 23:30'
-    }
-  ])
+  const [landRelationData, setLandRelationData] = useState<LandRelationData[]>([])
 
   const [originalData, setOriginalData] = useState<AssetData>(formData)
   const [isModified, setIsModified] = useState(false)
@@ -165,6 +145,50 @@ export function OneIdleAssetDetail({ assetId, onBack, assetData }: OneIdleAssetD
     };
 
     fetchAssetDetails();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [assetId, assetData]);
+
+  useEffect(() => {
+    let isMounted = true;
+
+    const fetchLandRelations = async () => {
+      const token = localStorage.getItem('access_token');
+      if (!token) return;
+
+      try {
+        const response = await fetch(`http://localhost:8000/api/v1/idle/buildings/${assetId}/lands`, {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
+
+        if (!response.ok) throw new Error('Failed to fetch land relations');
+
+        const data = await response.json();
+        
+        if (!isMounted) return;
+
+        const formattedData = data.map((item: any) => ({
+          id: item.id.toString(),
+          landNumber: item.lot_number || '',
+          landType: item.land_type || '',
+          landManager: item.land_manager || '',
+          createdAt: item.created_at || '',
+          updatedAt: item.updated_at || ''
+        }));
+
+        setLandRelationData(formattedData);
+      } catch (error) {
+        console.error('Error fetching land relations:', error);
+      }
+    };
+
+    if (assetData['資產類型'].includes('建物')) {
+      fetchLandRelations();
+    }
 
     return () => {
       isMounted = false;
@@ -446,7 +470,7 @@ export function OneIdleAssetDetail({ assetId, onBack, assetData }: OneIdleAssetD
         <TabsContent value="land-relations">
           <Card>
             <CardContent className="p-4 space-y-4">
-              {landRelationData.map((land, index) => (
+              {landRelationData.map((land) => (
                 <div key={land.id} className="grid grid-cols-2 gap-4 pb-4 border-b last:border-b-0">
                   <div className="space-y-2">
                     <Label>建物土地關聯ID</Label>
@@ -463,10 +487,6 @@ export function OneIdleAssetDetail({ assetId, onBack, assetData }: OneIdleAssetD
                   <div className="space-y-2">
                     <Label>土地管理者</Label>
                     <Input value={land.landManager} readOnly />
-                  </div>
-                  <div className="space-y-2">
-                    <Label>地段</Label>
-                    <Input value={land.landSection} readOnly />
                   </div>
                   <div className="space-y-2">
                     <Label>建立時間</Label>

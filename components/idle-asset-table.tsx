@@ -54,6 +54,7 @@ export function IdleAssetTable({ assets, sortConfig, onSort, onRowClick }: IdleA
           <TableHeader className="sticky top-0 bg-gray-200 z-10">
             <TableRow>
               {[
+                ['資產ID', 'id'],
                 ['資產類型', '資產類型'],
                 ['管理機關', '管理機關'],
                 ['行政區', '行政區'],
@@ -82,6 +83,7 @@ export function IdleAssetTable({ assets, sortConfig, onSort, onRowClick }: IdleA
                 className="cursor-pointer hover:bg-gray-100"
                 onClick={() => onRowClick(asset.id)}
               >
+                <TableCell>{asset.id}</TableCell>
                 <TableCell>{asset['資產類型']}</TableCell>
                 <TableCell>{asset['管理機關']}</TableCell>
                 <TableCell>{asset['行政區']}</TableCell>
