@@ -8,6 +8,17 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { ArrowLeft } from 'lucide-react'
 
+interface Asset {
+  id: string;
+  '資產類型': string;
+  '管理機關': string;
+  '行政區': string;
+  '地段': string;
+  '地址': string;
+  '標的名稱': string;
+  '建立時間': string;
+}
+
 interface AssetData {
   assetId: string
   assetType: string
