@@ -6,7 +6,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Header } from "@/components/header"
 import { IdleAssetsFilter } from '@/components/idle-assets-filter'
 import { Collapsible, CollapsibleTrigger, CollapsibleContent } from "@/components/ui/collapsible"
 import { ChevronDown, ChevronUp } from "lucide-react"
@@ -14,10 +13,6 @@ import { IdleAssetsFilterSummary } from '@/components/idle-assets-filter-summary
 import { IdleAssetTable } from '@/components/idle-asset-table'
 import dynamic from 'next/dynamic'
 import { OneIdleAssetDetail } from '@/components/one-idle-asset-detail'
-// 動態引入 Header 元件，並停用 SSR
-const DynamicHeader = dynamic(() => import('@/components/header').then(mod => mod.Header), {
-  ssr: false
-})
 
 type Asset = {
   id: string
@@ -34,6 +29,11 @@ type SortConfig = {
   key: keyof Asset | null
   direction: 'asc' | 'desc'
 }
+
+const Header = dynamic(
+  () => import('@/components/header').then(mod => mod.Header),
+  { ssr: false }
+)
 
 export function IdleAssetsDetailComponent() {
   const [assets, setAssets] = useState<Asset[]>([])
@@ -184,7 +184,7 @@ export function IdleAssetsDetailComponent() {
   if (selectedAsset) {
     return (
       <div className="min-h-screen bg-gray-200">
-        <DynamicHeader />
+        <Header />
         <div className="container mx-auto px-4 pt-24">
           <OneIdleAssetDetail 
             assetId={selectedAsset.id} 
@@ -198,7 +198,7 @@ export function IdleAssetsDetailComponent() {
 
   return (
     <div className="min-h-screen bg-gray-200">
-      <DynamicHeader />
+      <Header />
       <div className="container mx-auto px-4 pt-24">
         <div className="py-6">
           <h1 className="text-2xl font-bold mb-4">閒置資產共{assets.length}筆</h1>
