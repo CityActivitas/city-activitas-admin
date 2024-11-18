@@ -8,7 +8,7 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { ArrowLeft } from 'lucide-react'
 import { DistrictSelectorDrawerComponent } from "@/components/district-selector-drawer"
-import { ManagementUnitDrawerComponent } from "@/components/management-unit-drawer"
+import { AgenciesDrawerComponent } from "@/components/agencies-drawer"
 
 interface Asset {
   id: string;
@@ -401,7 +401,7 @@ export function OneIdleAssetDetail({ assetId, onBack, assetData }: OneIdleAssetD
                   </div>
                   <div className="space-y-2">
                     <Label>管理機關</Label>
-                    <ManagementUnitDrawerComponent 
+                    <AgenciesDrawerComponent 
                       currentUnit={formData.department}
                       onUnitSelect={(unit) => handleInputChange('department', unit)}
                     />

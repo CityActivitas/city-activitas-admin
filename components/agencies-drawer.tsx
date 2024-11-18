@@ -12,6 +12,12 @@ import {
   DrawerTitle,
   DrawerTrigger,
 } from "@/components/ui/drawer"
+import dynamic from 'next/dynamic'
+
+const AgenciesDrawer = dynamic(
+  () => import('./agencies-drawer').then(mod => mod.AgenciesDrawerComponent),
+  { ssr: false }
+)
 
 type ManagementUnit = {
   id: number
@@ -19,15 +25,15 @@ type ManagementUnit = {
   note: string
 }
 
-interface ManagementUnitDrawerProps {
+interface AgenciesDrawerProps {
   currentUnit: string;
   onUnitSelect: (unit: string) => void;
 }
 
-export function ManagementUnitDrawerComponent({ 
+export function AgenciesDrawerComponent ({ 
   currentUnit,
   onUnitSelect 
-}: ManagementUnitDrawerProps) {
+}: AgenciesDrawerProps) {
   const [isOpen, setIsOpen] = useState(false)
   const [filter, setFilter] = useState('')
   const [managementUnits, setManagementUnits] = useState<ManagementUnit[]>([])
