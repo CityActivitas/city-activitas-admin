@@ -7,6 +7,7 @@ import { Label } from "@/components/ui/label"
 import { Card, CardContent } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { ArrowLeft } from 'lucide-react'
+import { DistrictSelectorDrawerComponent } from "@/components/district-selector-drawer"
 
 interface Asset {
   id: string;
@@ -406,9 +407,9 @@ export function OneIdleAssetDetail({ assetId, onBack, assetData }: OneIdleAssetD
                   </div>
                   <div className="space-y-2">
                     <Label>行政區</Label>
-                    <Input 
-                      value={formData.district}
-                      onChange={(e) => handleInputChange('district', e.target.value)}
+                    <DistrictSelectorDrawerComponent 
+                      currentDistrict={formData.district}
+                      onDistrictSelect={(district) => handleInputChange('district', district)}
                     />
                   </div>
                   <div className="space-y-2">
