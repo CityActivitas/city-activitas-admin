@@ -519,11 +519,29 @@ export function OneIdleAssetDetail({ assetId, onBack, assetData }: OneIdleAssetD
                   </div>
                   <div className="space-y-2">
                     <Label>建立時間</Label>
-                    <Input value={land.createdAt} readOnly />
+                    <Input 
+                      value={new Date(land.createdAt).toLocaleString('zh-TW', {
+                        year: 'numeric',
+                        month: '2-digit',
+                        day: '2-digit',
+                        hour: '2-digit',
+                        minute: '2-digit',
+                      })} 
+                      readOnly 
+                    />
                   </div>
                   <div className="space-y-2">
                     <Label>修改時間</Label>
-                    <Input value={land.updatedAt} readOnly />
+                    <Input 
+                      value={new Date(land.updatedAt).toLocaleString('zh-TW', {
+                        year: 'numeric',
+                        month: '2-digit',
+                        day: '2-digit',
+                        hour: '2-digit',
+                        minute: '2-digit',
+                      })} 
+                      readOnly 
+                    />
                   </div>
                   <div className="col-span-2 flex justify-end">
                     <Button variant="outline">修改</Button>
