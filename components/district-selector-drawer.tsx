@@ -13,6 +13,12 @@ import {
   DrawerTitle,
   DrawerTrigger,
 } from "@/components/ui/drawer"
+import dynamic from 'next/dynamic'
+
+const DistrictSelectorDrawer = dynamic(
+  () => import('./district-selector-drawer').then(mod => mod.DistrictSelectorDrawerComponent),
+  { ssr: false }
+)
 
 const districts = [
   "新營區", "鹽水區", "白河區", "柳營區", "後壁區", "東山區", "麻豆區",
@@ -69,6 +75,9 @@ export function DistrictSelectorDrawerComponent({
       <DrawerContent>
         <DrawerHeader>
           <DrawerTitle>選擇行政區</DrawerTitle>
+          <DrawerDescription>
+            請選擇要修改的行政區域
+          </DrawerDescription>
         </DrawerHeader>
         <div className="p-4 pb-0">
           <Input
