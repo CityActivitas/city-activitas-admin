@@ -9,6 +9,16 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { ArrowLeft } from 'lucide-react'
 import { DistrictSelectorDrawerComponent } from "@/components/district-selector-drawer"
 import { AgenciesDrawerComponent } from "@/components/agencies-drawer"
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+  DialogFooter,
+  DialogDescription,
+  DialogClose
+} from "@/components/ui/dialog"
 
 interface Asset {
   id: string;
@@ -485,12 +495,70 @@ export function OneIdleAssetDetail({ assetId, onBack, assetData }: OneIdleAssetD
                   >
                     取消
                   </Button>
-                  <Button 
-                    onClick={handleSubmit}
-                    disabled={!isModified}
-                  >
-                    修改
-                  </Button>
+                  <Dialog>
+                    <DialogTrigger asChild>
+                      <Button disabled={!isModified}>
+                        修改
+                      </Button>
+                    </DialogTrigger>
+                    <DialogContent className="max-w-2xl">
+                      <DialogHeader>
+                        <DialogTitle>確認修改</DialogTitle>
+                        <DialogDescription>
+                          修改後的資料如下：
+                        </DialogDescription>
+                      </DialogHeader>
+                      <div className="space-y-2 text-sm">
+                        {Object.entries(formData).map(([key, value]) => {
+                          const isModified = originalData[key as keyof AssetData] !== value;
+                          const label = {
+                            assetId: '資產ID',
+                            assetType: '資產種類',
+                            department: '管理機關',
+                            district: '行政區',
+                            section: '地段',
+                            address: '地址',
+                            coordinates: '定位座標',
+                            areaCoordinates: '區域座標組',
+                            markerName: '標的名稱',
+                            status: '狀態',
+                            createdAt: '建立時間',
+                            updatedAt: '修改時間',
+                            buildingId: '建物ID',
+                            buildingNumber: '建號',
+                            buildingType: '建物類型',
+                            landArea: '面積',
+                            usage: '使用分區',
+                            landUsage: '土地用途',
+                            condition: '現況',
+                            vacancyRate: '空置比例',
+                            note: '備註',
+                            landNumber: '地號',
+                            landType: '土地類型'
+                          }[key];
+
+                          return (
+                            <div key={key} className="flex">
+                              <span className="w-24 flex-shrink-0">{label}:</span>
+                              <span className={`${isModified ? "font-bold text-red-500" : ""}`}>
+                                {value || '無'}
+                              </span>
+                            </div>
+                          );
+                        })}
+                      </div>
+                      <DialogFooter>
+                        <DialogClose asChild>
+                          <Button variant="outline">
+                            取消
+                          </Button>
+                        </DialogClose>
+                        <Button onClick={handleSubmit}>
+                          確認修改
+                        </Button>
+                      </DialogFooter>
+                    </DialogContent>
+                  </Dialog>
                 </div>
               </CardContent>
             </Card>
