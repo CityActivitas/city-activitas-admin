@@ -14,8 +14,8 @@ const geistMono = localFont({
 });
 
 export const metadata: Metadata = {
-  title: "不動產資產管理系統",
-  description: "不動產資產管理系統",
+  title: "資產管理系統",
+  description: "資產管理系統",
 };
 
 export default function RootLayout({

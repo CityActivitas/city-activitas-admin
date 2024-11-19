@@ -52,7 +52,7 @@ export function Login() {
     <div className="min-h-screen flex items-center justify-center bg-gray-100">
       <Card className="w-full max-w-md">
         <CardHeader className="space-y-1">
-          <CardTitle className="text-2xl font-bold text-center">不動產資產管理系統</CardTitle>
+          <CardTitle className="text-2xl font-bold text-center">資產管理系統</CardTitle>
           {error && <p className="text-red-500 text-center">{error}</p>}
         </CardHeader>
         <form onSubmit={handleLogin}>
