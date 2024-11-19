@@ -6,7 +6,6 @@ import { GoogleMap, MarkerF } from "@react-google-maps/api"
 import { useGoogleMaps } from "./providers/google-maps-provider"
 
 import { Button } from "@/components/ui/button"
-import { Checkbox } from "@/components/ui/checkbox"
 import { Drawer, DrawerClose, DrawerContent, DrawerHeader, DrawerTitle } from "@/components/ui/drawer"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -42,7 +41,6 @@ export function LocationDrawerComponent({
   const [address, setAddress] = React.useState("")
   const [coordinates, setCoordinates] = React.useState("")
   const [marker, setMarker] = React.useState<google.maps.LatLngLiteral | null>(null)
-  const [isLinked, setIsLinked] = React.useState(true)
 
   React.useEffect(() => {
     if (open) {
@@ -69,16 +67,14 @@ export function LocationDrawerComponent({
             }
             setMarker(latLng)
             map?.panTo(latLng)
-            if (isLinked) {
-              setCoordinates(`${latLng.lat.toFixed(6)}, ${latLng.lng.toFixed(6)}`)
-            }
+            setCoordinates(`${latLng.lat.toFixed(6)}, ${latLng.lng.toFixed(6)}`)
           }
         }).catch(error => {
           console.error('Geocoding error:', error)
         })
       }
     }
-  }, [open, initialAddress, initialCoordinates, map, isLoaded, isLinked])
+  }, [open, initialAddress, initialCoordinates, map, isLoaded])
 
   const handleMapClick = async (event: google.maps.MapMouseEvent) => {
     if (!event.latLng) return
@@ -132,11 +128,42 @@ export function LocationDrawerComponent({
     }
   }
 
-  const handleClear = () => {
+  const handleClear = async () => {
     setSearchValue("")
-    setMarker(null)
-    setAddress("")
-    setCoordinates("")
+    
+    if (initialAddress) {
+      try {
+        const geocoder = new window.google.maps.Geocoder()
+        const response = await geocoder.geocode({
+          address: initialAddress,
+          language: 'zh-TW'
+        })
+
+        if (response.results && response.results.length > 0) {
+          const location = response.results[0].geometry.location
+          const latLng = {
+            lat: location.lat(),
+            lng: location.lng()
+          }
+          setMarker(latLng)
+          map?.panTo(latLng)
+        }
+      } catch (error) {
+        console.error('Geocoding error:', error)
+      }
+    } else if (initialCoordinates) {
+      const [lat, lng] = initialCoordinates.split(',').map(Number)
+      if (!isNaN(lat) && !isNaN(lng)) {
+        const latLng = { lat, lng }
+        setMarker(latLng)
+        map?.panTo(latLng)
+      }
+    } else {
+      setMarker(null)
+    }
+    
+    setAddress(initialAddress)
+    setCoordinates(initialCoordinates)
   }
 
   const handleConfirm = () => {
@@ -166,15 +193,6 @@ export function LocationDrawerComponent({
               <X className="h-4 w-4 mr-2" />
               清除
             </Button>
-          </div>
-
-          <div className="flex items-center space-x-2">
-            <Checkbox
-              id="link"
-              checked={isLinked}
-              onCheckedChange={(checked) => setIsLinked(checked as boolean)}
-            />
-            <Label htmlFor="link">地址和座標連動</Label>
           </div>
 
           <div className="h-[40vh] w-full border rounded-md overflow-hidden">
