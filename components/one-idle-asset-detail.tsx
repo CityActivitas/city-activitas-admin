@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { ArrowLeft } from 'lucide-react'
+import { ArrowLeft, MapPin } from 'lucide-react'
 import { DistrictSelectorDrawerComponent } from "@/components/district-selector-drawer"
 import { AgenciesDrawerComponent } from "@/components/agencies-drawer"
 import {
@@ -20,6 +20,7 @@ import {
   DialogClose
 } from "@/components/ui/dialog"
 import { LandRelationsTab } from "@/components/land-relations-tab"
+import { LocationDrawerComponent } from "@/components/location-drawer"
 
 interface Asset {
   id: string;
@@ -109,6 +110,8 @@ export function OneIdleAssetDetail({ assetId, onBack, assetData }: OneIdleAssetD
 
   const [originalData, setOriginalData] = useState<AssetData>(formData)
   const [isModified, setIsModified] = useState(false)
+
+  const [locationDrawerOpen, setLocationDrawerOpen] = useState(false)
 
   useEffect(() => {
     setIsModified(JSON.stringify(formData) !== JSON.stringify(originalData))
@@ -438,18 +441,34 @@ export function OneIdleAssetDetail({ assetId, onBack, assetData }: OneIdleAssetD
                   </div>
                   <div className="space-y-2">
                     <Label>地址</Label>
-                    <Input 
-                      value={formData.address}
-                      onChange={(e) => handleInputChange('address', e.target.value)}
-                    />
+                    <div className="flex gap-2">
+                      <Input 
+                        value={formData.address}
+                        onChange={(e) => handleInputChange('address', e.target.value)}
+                        onClick={() => setLocationDrawerOpen(true)}
+                        readOnly
+                      />
+                    </div>
                   </div>
                   <div className="space-y-2">
                     <Label>定位座標</Label>
                     <Input 
                       value={formData.coordinates}
                       onChange={(e) => handleInputChange('coordinates', e.target.value)}
+                      onClick={() => setLocationDrawerOpen(true)}
+                      readOnly
                     />
                   </div>
+                  <LocationDrawerComponent 
+                    open={locationDrawerOpen} 
+                    onOpenChange={setLocationDrawerOpen}
+                    onConfirm={(address, coordinates) => {
+                      handleInputChange('address', address);
+                      handleInputChange('coordinates', coordinates);
+                    }}
+                    initialAddress={formData.address}
+                    initialCoordinates={formData.coordinates}
+                  />
                   <div className="space-y-2">
                     <Label>區域座標組</Label>
                     <Input 
