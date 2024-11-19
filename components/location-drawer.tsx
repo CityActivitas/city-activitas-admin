@@ -12,7 +12,8 @@ import { Label } from "@/components/ui/label"
 
 const mapContainerStyle = {
   width: "100%",
-  height: "100%"
+  height: "100%",
+  touchAction: "none"
 }
 
 const defaultCenter = {
@@ -177,8 +178,8 @@ export function LocationDrawerComponent({
         <DrawerHeader className="border-b">
           <DrawerTitle>地址查詢</DrawerTitle>
         </DrawerHeader>
-        <div className="p-4 space-y-4">
-          <div className="flex gap-2">
+        <div className="p-4 flex flex-col gap-4 h-[calc(90vh-4rem)]">
+          <div className="flex gap-2 flex-shrink-0">
             <Input
               placeholder="輸入地址或是座標來搜尋"
               value={searchValue}
@@ -195,25 +196,27 @@ export function LocationDrawerComponent({
             </Button>
           </div>
 
-          <div className="h-[40vh] w-full border rounded-md overflow-hidden">
-            {isLoaded ? (
-              <GoogleMap
-                mapContainerStyle={mapContainerStyle}
-                center={marker || defaultCenter}
-                zoom={13}
-                onLoad={setMap}
-                onClick={handleMapClick}
-              >
-                {marker && <MarkerF position={marker} />}
-              </GoogleMap>
-            ) : (
-              <div className="h-full w-full flex items-center justify-center bg-muted">
-                載入地圖中...
-              </div>
-            )}
+          <div className="relative flex-1 border rounded-md overflow-hidden">
+            <div className="absolute inset-0 overflow-hidden">
+              {isLoaded ? (
+                <GoogleMap
+                  mapContainerStyle={mapContainerStyle}
+                  center={marker || defaultCenter}
+                  zoom={13}
+                  onLoad={setMap}
+                  onClick={handleMapClick}
+                >
+                  {marker && <MarkerF position={marker} />}
+                </GoogleMap>
+              ) : (
+                <div className="h-full w-full flex items-center justify-center bg-muted">
+                  載入地圖中...
+                </div>
+              )}
+            </div>
           </div>
 
-          <div className="space-y-4">
+          <div className="space-y-4 flex-shrink-0">
             <div className="space-y-2">
               <Label htmlFor="address">地址:</Label>
               <div className="flex gap-2">
@@ -246,13 +249,13 @@ export function LocationDrawerComponent({
                 readOnly
               />
             </div>
-          </div>
 
-          <div className="flex justify-end gap-2 mt-8 mb-4">
-            <DrawerClose asChild>
-              <Button variant="outline">取消</Button>
-            </DrawerClose>
-            <Button onClick={handleConfirm}>確定修改</Button>
+            <div className="flex justify-end gap-2">
+              <DrawerClose asChild>
+                <Button variant="outline">取消</Button>
+              </DrawerClose>
+              <Button onClick={handleConfirm}>確定修改</Button>
+            </div>
           </div>
         </div>
       </DrawerContent>
