@@ -19,6 +19,7 @@ import {
   DialogDescription,
   DialogClose
 } from "@/components/ui/dialog"
+import { LandRelationsTab } from "@/components/land-relations-tab"
 
 interface Asset {
   id: string;
@@ -530,7 +531,7 @@ export function OneIdleAssetDetail({ assetId, onBack, assetData }: OneIdleAssetD
                             landArea: '面積',
                             usage: '使用分區',
                             landUsage: '土地用途',
-                            condition: '現況',
+                            condition: '��況',
                             vacancyRate: '空置比例',
                             note: '備註',
                             landNumber: '地號',
@@ -565,60 +566,7 @@ export function OneIdleAssetDetail({ assetId, onBack, assetData }: OneIdleAssetD
           </div>
         </TabsContent>
         <TabsContent value="land-relations">
-          <Card>
-            <CardContent className="p-4 space-y-4">
-              {landRelationData.map((land) => (
-                <div key={land.id} className="grid grid-cols-2 gap-4 pb-4 border-b last:border-b-0">
-                  <div className="space-y-2">
-                    <Label>建物土地關聯ID</Label>
-                    <Input value={land.id} readOnly />
-                  </div>
-                  <div className="space-y-2">
-                    <Label>地號</Label>
-                    <Input value={land.landNumber} readOnly />
-                  </div>
-                  <div className="space-y-2">
-                    <Label>土地種類</Label>
-                    <Input value={land.landType} readOnly />
-                  </div>
-                  <div className="space-y-2">
-                    <Label>土地管理者</Label>
-                    <Input value={land.landManager} readOnly />
-                  </div>
-                  <div className="space-y-2">
-                    <Label>建立時間</Label>
-                    <Input 
-                      value={new Date(land.createdAt).toLocaleString('zh-TW', {
-                        year: 'numeric',
-                        month: '2-digit',
-                        day: '2-digit',
-                        hour: '2-digit',
-                        minute: '2-digit',
-                      })} 
-                      readOnly 
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label>修改時間</Label>
-                    <Input 
-                      value={new Date(land.updatedAt).toLocaleString('zh-TW', {
-                        year: 'numeric',
-                        month: '2-digit',
-                        day: '2-digit',
-                        hour: '2-digit',
-                        minute: '2-digit',
-                      })} 
-                      readOnly 
-                    />
-                  </div>
-                  <div className="col-span-2 flex justify-end">
-                    <Button variant="outline">修改</Button>
-                    <Button variant="destructive" className="ml-2">刪除</Button>
-                  </div>
-                </div>
-              ))}
-            </CardContent>
-          </Card>
+          <LandRelationsTab landRelationData={landRelationData} />
         </TabsContent>
       </Tabs>
     </div>
