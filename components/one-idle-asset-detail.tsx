@@ -374,14 +374,16 @@ export function OneIdleAssetDetail({ assetId, onBack, assetData }: OneIdleAssetD
   };
 
   return (
-    <div className="container mx-auto p-4 space-y-4">
+    <div className="container mx-auto px-4 space-y-4">
       <div className="flex items-center gap-2 text-lg font-medium">
-        <button 
+        <Button 
           onClick={onBack} 
-          className="hover:text-primary"
+          variant="ghost"
+          className="hover:text-primary flex items-center gap-1"
         >
           <ArrowLeft className="w-5 h-5" />
-        </button>
+          <span>回閒置資產列表</span>
+        </Button>
       </div>
 
       <Tabs defaultValue="asset-details" className="w-full">
@@ -531,7 +533,7 @@ export function OneIdleAssetDetail({ assetId, onBack, assetData }: OneIdleAssetD
                             landArea: '面積',
                             usage: '使用分區',
                             landUsage: '土地用途',
-                            condition: '��況',
+                            condition: '現況',
                             vacancyRate: '空置比例',
                             note: '備註',
                             landNumber: '地號',

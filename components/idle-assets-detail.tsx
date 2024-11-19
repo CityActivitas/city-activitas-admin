@@ -200,7 +200,7 @@ export function IdleAssetsDetailComponent() {
     <div className="min-h-screen bg-gray-200">
       <Header />
       <div className="container mx-auto px-4 pt-24">
-        <div className="py-6">
+        <div className="py-2">
           <h1 className="text-2xl font-bold mb-4">閒置資產共{assets.length}筆</h1>
           <Tabs defaultValue="list" className="w-full">
             <TabsList className="grid w-full grid-cols-2">
