@@ -28,6 +28,8 @@ interface Asset {
   '行政區': string;
   '地段': string;
   '地址': string;
+  '定位座標': string;
+  '區域座標組': string;
   '標的名稱': string;
   '建立時間': string;
 }
@@ -83,8 +85,8 @@ export function OneIdleAssetDetail({ assetId, onBack, assetData }: OneIdleAssetD
     district: assetData['行政區'] || '',
     section: assetData['地段'] || '',
     address: assetData['地址'] || '',
-    coordinates: '41.40338, 2.17403',
-    areaCoordinates: '41.40338, 2.17403',
+    coordinates: assetData['定位座標'] || '',
+    areaCoordinates: assetData['區域座標組'] || '',
     markerName: assetData['標的名稱'] || '',
     status: '未活化',
     createdAt: assetData['建立時間'] || '',
@@ -373,6 +375,7 @@ export function OneIdleAssetDetail({ assetId, onBack, assetData }: OneIdleAssetD
     }
   };
 
+
   return (
     <div className="container mx-auto px-4 space-y-4">
       <div className="flex items-center gap-2 text-lg font-medium">
@@ -465,7 +468,7 @@ export function OneIdleAssetDetail({ assetId, onBack, assetData }: OneIdleAssetD
                     <Label>狀態</Label>
                     <Input 
                       value={formData.status}
-                      onChange={(e) => handleInputChange('status', e.target.value)}
+                      readOnly
                     />
                   </div>
                   <div className="space-y-2">
