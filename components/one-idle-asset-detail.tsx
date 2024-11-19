@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { ArrowLeft } from 'lucide-react'
+import { ArrowLeft, MapPin } from 'lucide-react'
 import { DistrictSelectorDrawerComponent } from "@/components/district-selector-drawer"
 import { AgenciesDrawerComponent } from "@/components/agencies-drawer"
 import {
@@ -20,6 +20,7 @@ import {
   DialogClose
 } from "@/components/ui/dialog"
 import { LandRelationsTab } from "@/components/land-relations-tab"
+import { LocationDrawerComponent } from "@/components/location-drawer"
 
 interface Asset {
   id: string;
@@ -28,6 +29,8 @@ interface Asset {
   '行政區': string;
   '地段': string;
   '地址': string;
+  '定位座標': string;
+  '區域座標組': string;
   '標的名稱': string;
   '建立時間': string;
 }
@@ -83,8 +86,8 @@ export function OneIdleAssetDetail({ assetId, onBack, assetData }: OneIdleAssetD
     district: assetData['行政區'] || '',
     section: assetData['地段'] || '',
     address: assetData['地址'] || '',
-    coordinates: '41.40338, 2.17403',
-    areaCoordinates: '41.40338, 2.17403',
+    coordinates: assetData['定位座標'] || '',
+    areaCoordinates: assetData['區域座標組'] || '',
     markerName: assetData['標的名稱'] || '',
     status: '未活化',
     createdAt: assetData['建立時間'] || '',
@@ -107,6 +110,8 @@ export function OneIdleAssetDetail({ assetId, onBack, assetData }: OneIdleAssetD
 
   const [originalData, setOriginalData] = useState<AssetData>(formData)
   const [isModified, setIsModified] = useState(false)
+
+  const [locationDrawerOpen, setLocationDrawerOpen] = useState(false)
 
   useEffect(() => {
     setIsModified(JSON.stringify(formData) !== JSON.stringify(originalData))
@@ -373,6 +378,7 @@ export function OneIdleAssetDetail({ assetId, onBack, assetData }: OneIdleAssetD
     }
   };
 
+
   return (
     <div className="container mx-auto px-4 space-y-4">
       <div className="flex items-center gap-2 text-lg font-medium">
@@ -435,18 +441,34 @@ export function OneIdleAssetDetail({ assetId, onBack, assetData }: OneIdleAssetD
                   </div>
                   <div className="space-y-2">
                     <Label>地址</Label>
-                    <Input 
-                      value={formData.address}
-                      onChange={(e) => handleInputChange('address', e.target.value)}
-                    />
+                    <div className="flex gap-2">
+                      <Input 
+                        value={formData.address}
+                        onChange={(e) => handleInputChange('address', e.target.value)}
+                        onClick={() => setLocationDrawerOpen(true)}
+                        readOnly
+                      />
+                    </div>
                   </div>
                   <div className="space-y-2">
                     <Label>定位座標</Label>
                     <Input 
                       value={formData.coordinates}
                       onChange={(e) => handleInputChange('coordinates', e.target.value)}
+                      onClick={() => setLocationDrawerOpen(true)}
+                      readOnly
                     />
                   </div>
+                  <LocationDrawerComponent 
+                    open={locationDrawerOpen} 
+                    onOpenChange={setLocationDrawerOpen}
+                    onConfirm={(address, coordinates) => {
+                      handleInputChange('address', address);
+                      handleInputChange('coordinates', coordinates);
+                    }}
+                    initialAddress={formData.address}
+                    initialCoordinates={formData.coordinates}
+                  />
                   <div className="space-y-2">
                     <Label>區域座標組</Label>
                     <Input 
@@ -465,7 +487,7 @@ export function OneIdleAssetDetail({ assetId, onBack, assetData }: OneIdleAssetD
                     <Label>狀態</Label>
                     <Input 
                       value={formData.status}
-                      onChange={(e) => handleInputChange('status', e.target.value)}
+                      readOnly
                     />
                   </div>
                   <div className="space-y-2">

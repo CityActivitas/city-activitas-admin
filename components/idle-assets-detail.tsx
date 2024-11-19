@@ -13,22 +13,7 @@ import { IdleAssetsFilterSummary } from '@/components/idle-assets-filter-summary
 import { IdleAssetTable } from '@/components/idle-asset-table'
 import dynamic from 'next/dynamic'
 import { OneIdleAssetDetail } from '@/components/one-idle-asset-detail'
-
-type Asset = {
-  id: string
-  '資產類型': string
-  '管理機關': string
-  '行政區': string
-  '地段': string
-  '地址': string
-  '標的名稱': string
-  '建立時間': string
-}
-
-type SortConfig = {
-  key: keyof Asset | null
-  direction: 'asc' | 'desc'
-}
+import { Asset, SortConfig } from '@/components/types'
 
 const Header = dynamic(
   () => import('@/components/header').then(mod => mod.Header),
