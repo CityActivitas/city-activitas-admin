@@ -33,33 +33,35 @@ interface Asset {
   '區域座標組': string;
   '標的名稱': string;
   '建立時間': string;
+  '土地明細ID': string;
 }
 
 // 資產細項 
 interface AssetData {
-  assetId: string
-  assetType: string
-  department: string
-  district: string
-  section: string
-  address: string
-  coordinates: string
-  areaCoordinates: string
-  markerName: string
-  status: string
-  createdAt: string
-  updatedAt: string
-  buildingId: string
-  buildingNumber: string
-  buildingType: string
-  landArea: string
-  usage: string
-  landUsage: string
-  condition: string
-  vacancyRate: string
-  note: string
-  landNumber: string
-  landType: string
+  assetId: string;
+  landDetailId: string;
+  assetType: string;
+  department: string;
+  district: string;
+  section: string;
+  address: string;
+  coordinates: string;
+  areaCoordinates: string;
+  markerName: string;
+  status: string;
+  createdAt: string;
+  updatedAt: string;
+  buildingId: string;
+  buildingNumber: string;
+  buildingType: string;
+  landArea: string;
+  usage: string;
+  landUsage: string;
+  condition: string;
+  vacancyRate: string;
+  note: string;
+  landNumber: string;
+  landType: string;
 }
 
 // 建物土地關聯細項
@@ -81,6 +83,7 @@ interface OneIdleAssetDetailProps {
 export function OneIdleAssetDetail({ assetId, onBack, assetData }: OneIdleAssetDetailProps) {
   const [formData, setFormData] = useState<AssetData>({
     assetId: assetData.id || '',
+    landDetailId: assetData['土地明細ID'] || '',
     assetType: assetData['資產類型'] || '',
     department: assetData['管理機關'] || '',
     district: assetData['行政區'] || '',
@@ -146,12 +149,12 @@ export function OneIdleAssetDetail({ assetId, onBack, assetData }: OneIdleAssetD
           setFormData(prev => {
             const newData = {
               ...prev,
-              buildingId: detailData['資產ID']?.toString() || '',
+              buildingId: detailData['建物明細ID']?.toString() || '',
               buildingNumber: detailData['建號'] || '',
               buildingType: detailData['建物類型'] || '',
               landArea: detailData['樓地板面積'] || '',
               usage: detailData['使用分區'] || '',
-              landUsage: detailData['土地使用'] || '',
+              landUsage: detailData['土地用途'] || '',
               condition: detailData['使用現況'] || '',
               vacancyRate: detailData['空置比例(%)']?.toString() || '',
               note: detailData['建物備註'] || '',
@@ -165,6 +168,7 @@ export function OneIdleAssetDetail({ assetId, onBack, assetData }: OneIdleAssetD
           setFormData(prev => {
             const newData = {
               ...prev,
+              landDetailId: detailData['土地明細ID']?.toString() || '',
               landNumber: detailData['地號'] || '',
               landType: detailData['土地類型'] || '',
               landArea: detailData['面積(平方公尺)']?.toString() || '',
@@ -244,11 +248,158 @@ export function OneIdleAssetDetail({ assetId, onBack, assetData }: OneIdleAssetD
     }))
   }
 
-  const handleSubmit = () => {
-    // Here you would typically make an API call to update the data
-    setOriginalData(formData)
-    setIsModified(false)
-  }
+  const handleSubmit = async () => {
+    try {
+      const token = localStorage.getItem('access_token');
+      if (!token) return;
+
+      // 定義各類欄位
+      const assetFields = ['assetType', 'department', 'district', 'section', 'address', 
+        'coordinates', 'areaCoordinates', 'markerName', 'status'];
+      
+      const buildingFields = ['buildingNumber', 'buildingType', 'landArea', 'usage', 
+        'landUsage', 'condition', 'vacancyRate', 'note'];
+      
+      const landFields = ['landNumber', 'landType', 'landArea', 'usage', 
+        'landUsage', 'condition', 'vacancyRate', 'note'];
+
+      const changedFields = Object.keys(formData).reduce((acc: Partial<AssetData>, key) => {
+        const typedKey = key as keyof AssetData;
+        if (JSON.stringify(formData[typedKey]) !== JSON.stringify(originalData[typedKey])) {
+          acc[typedKey] = formData[typedKey];
+        }
+        return acc;
+      }, {});
+
+      if (Object.keys(changedFields).length === 0) return;
+
+      const updates = [];
+
+      // 資產基本資料欄位映射
+      const assetFieldsMap: { [key: string]: string } = {
+        assetType: 'type',
+        department: 'agency_id',
+        district: 'district_id',
+        section: 'section',
+        address: 'address',
+        coordinates: 'coordinates',
+        areaCoordinates: 'area_coordinates',
+        markerName: 'target_name',
+        status: 'status'
+      };
+
+      // 處理資產基本資料更新
+      const assetPayload: any = {};
+      Object.entries(assetFieldsMap).forEach(([formKey, dbKey]) => {
+        if (formKey in changedFields) {
+          assetPayload[dbKey] = changedFields[formKey as keyof AssetData];
+        }
+      });
+
+      if (Object.keys(assetPayload).length > 0) {
+        updates.push(
+          fetch(`http://localhost:8000/api/v1/assets/${formData.assetId}`, {
+            method: 'PATCH',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify(assetPayload)
+          })
+        );
+      }
+
+      // 建物欄位映射
+      const buildingFieldsMap: { [key: string]: string } = {
+        buildingNumber: 'building_number',
+        buildingType: 'building_type',
+        landArea: 'floor_area',      // 注意：前端的 landArea 對應到 floor_area
+        usage: 'zone_type',
+        landUsage: 'land_use',
+        condition: 'current_status',
+        vacancyRate: 'vacancy_rate',
+        note: 'note'
+      };
+
+      // 處理建物細節更新
+      if (formData.assetType.includes('建物')) {
+        const buildingPayload: any = {};
+        Object.entries(buildingFieldsMap).forEach(([formKey, dbKey]) => {
+          if (formKey in changedFields) {
+            // 注意：vacancy_rate 在建物表是 varchar 類型
+            buildingPayload[dbKey] = changedFields[formKey as keyof AssetData];
+          }
+        });
+
+        if (Object.keys(buildingPayload).length > 0) {
+          updates.push(
+            fetch(`http://localhost:8000/api/v1/assets/buildings/${formData.buildingId}`, {
+              method: 'PATCH',
+              headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+              },
+              body: JSON.stringify(buildingPayload)
+            })
+          );
+        }
+      }
+
+      // 土地欄位映射
+      const landFieldsMap: { [key: string]: string } = {
+        landNumber: 'lot_number',
+        landType: 'land_type',
+        landArea: 'area',
+        usage: 'zone_type',
+        landUsage: 'land_use',
+        condition: 'current_status',
+        vacancyRate: 'vacancy_rate',
+        note: 'note'
+      };
+
+      // 處理土地細節更新
+      if (!formData.assetType.includes('建物')) {
+        const landPayload: any = {};
+        Object.entries(landFieldsMap).forEach(([formKey, dbKey]) => {
+          if (formKey in changedFields) {
+            if (dbKey === 'area' || dbKey === 'vacancy_rate') {
+              landPayload[dbKey] = Number(changedFields[formKey as keyof AssetData]) || 0;
+            } else {
+              landPayload[dbKey] = changedFields[formKey as keyof AssetData];
+            }
+          }
+        });
+
+        if (Object.keys(landPayload).length > 0) {
+          updates.push(
+            fetch(`http://localhost:8000/api/v1/assets/lands/${formData.landDetailId}`, {
+              method: 'PATCH',
+              headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+              },
+              body: JSON.stringify(landPayload)
+            })
+          );
+        }
+      }
+
+      // 執行所有更新
+      const results = await Promise.all(updates);
+      const hasError = results.some(res => !res.ok);
+
+      if (hasError) {
+        throw new Error('部分更新失敗');
+      }
+
+      setOriginalData(formData);
+      setIsModified(false);
+      alert('更新成功');
+    } catch (error) {
+      console.error('更新錯誤:', error);
+      alert('更新失敗，請稍後再試');
+    }
+  };
 
   const renderDetailFields = () => {
     const isBuilding = assetData['資產類型'].includes('建物');
@@ -256,6 +407,13 @@ export function OneIdleAssetDetail({ assetId, onBack, assetData }: OneIdleAssetD
     if (isBuilding) {
       return (
         <div className="grid grid-cols-2 gap-4">
+          <div className="space-y-2">
+            <Label>建物明細ID</Label>
+            <Input 
+              value={formData.buildingId}
+              readOnly
+            />
+          </div>
           <div className="space-y-2">
             <Label>建號</Label>
             <Input 
@@ -317,6 +475,13 @@ export function OneIdleAssetDetail({ assetId, onBack, assetData }: OneIdleAssetD
     } else {
       return (
         <div className="grid grid-cols-2 gap-4">
+          <div className="space-y-2">
+            <Label>土地明細ID</Label>
+            <Input 
+              value={formData.landDetailId}
+              readOnly
+            />
+          </div>
           <div className="space-y-2">
             <Label>地號</Label>
             <Input 
@@ -549,7 +714,8 @@ export function OneIdleAssetDetail({ assetId, onBack, assetData }: OneIdleAssetD
                             status: '狀態',
                             createdAt: '建立時間',
                             updatedAt: '修改時間',
-                            buildingId: '建物ID',
+                            buildingId: '建物明細ID',
+                            landDetailId: '土地明細ID',
                             buildingNumber: '建號',
                             buildingType: '建物類型',
                             landArea: '面積',
