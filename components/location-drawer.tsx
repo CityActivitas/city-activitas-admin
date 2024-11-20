@@ -29,6 +29,15 @@ interface LocationDrawerProps {
   initialCoordinates?: string
 }
 
+// 處理座標字串的函數
+const formatCoordinates = (coordString: string) => {
+  // 移除括號並分割座標
+  const cleaned = coordString.replace(/[()]/g, '').trim();
+  const [lat, lng] = cleaned.split(',').map(coord => parseFloat(coord.trim()));
+  // 返回正確順序的座標 (緯度, 經度)
+  return { lat, lng };
+};
+
 export function LocationDrawerComponent({ 
   open, 
   onOpenChange, 
@@ -46,13 +55,18 @@ export function LocationDrawerComponent({
   React.useEffect(() => {
     if (open) {
       setAddress(initialAddress)
-      setCoordinates(initialCoordinates)
       
       if (initialCoordinates) {
-        const [lat, lng] = initialCoordinates.split(',').map(Number)
-        if (!isNaN(lat) && !isNaN(lng)) {
-          setMarker({ lat, lng })
-          map?.panTo({ lat, lng })
+        try {
+          const coords = formatCoordinates(initialCoordinates);
+          if (!isNaN(coords.lat) && !isNaN(coords.lng)) {
+            setMarker(coords)
+            map?.panTo(coords)
+            // 保持顯示格式為 (經度,緯度)
+            setCoordinates(`(${coords.lng.toFixed(6)},${coords.lat.toFixed(6)})`)
+          }
+        } catch (error) {
+          console.error('Error parsing coordinates:', error)
         }
       } else if (initialAddress && isLoaded) {
         const geocoder = new window.google.maps.Geocoder()
@@ -68,7 +82,7 @@ export function LocationDrawerComponent({
             }
             setMarker(latLng)
             map?.panTo(latLng)
-            setCoordinates(`${latLng.lat.toFixed(6)}, ${latLng.lng.toFixed(6)}`)
+            setCoordinates(`(${latLng.lng.toFixed(6)},${latLng.lat.toFixed(6)})`)
           }
         }).catch(error => {
           console.error('Geocoding error:', error)
@@ -95,7 +109,7 @@ export function LocationDrawerComponent({
 
       if (response.results[0]) {
         setAddress(response.results[0].formatted_address)
-        setCoordinates(`${latLng.lat.toFixed(6)}, ${latLng.lng.toFixed(6)}`)
+        setCoordinates(`(${latLng.lng.toFixed(6)},${latLng.lat.toFixed(6)})`)
       }
     } catch (error) {
       console.error('Geocoding error:', error)
@@ -122,7 +136,7 @@ export function LocationDrawerComponent({
         map?.panTo(location)
         setMarker(latLng)
         setAddress(response.results[0].formatted_address)
-        setCoordinates(`${latLng.lat.toFixed(6)}, ${latLng.lng.toFixed(6)}`)
+        setCoordinates(`(${latLng.lng.toFixed(6)},${latLng.lat.toFixed(6)})`)
       }
     } catch (error) {
       console.error('Search error:', error)
