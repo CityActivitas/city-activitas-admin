@@ -9,6 +9,8 @@ export type Asset = {
   '區域座標組': string
   '標的名稱': string
   '建立時間': string
+  '土地明細ID'?: string
+  '建物明細ID'?: string
 }
 
 export type SortConfig = {

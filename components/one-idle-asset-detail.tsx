@@ -21,6 +21,7 @@ import {
 } from "@/components/ui/dialog"
 import { LandRelationsTab } from "@/components/land-relations-tab"
 import { LocationDrawerComponent } from "@/components/location-drawer"
+import { useToast } from "@/hooks/use-toast"
 
 interface Asset {
   id: string;
@@ -78,9 +79,12 @@ interface OneIdleAssetDetailProps {
   assetId: string;
   onBack: () => void;
   assetData: Asset;
+  onUpdateSuccess?: () => void;
 }
 
-export function OneIdleAssetDetail({ assetId, onBack, assetData }: OneIdleAssetDetailProps) {
+export function OneIdleAssetDetail({ assetId, onBack, assetData, onUpdateSuccess }: OneIdleAssetDetailProps) {
+  const { toast } = useToast()
+
   const [formData, setFormData] = useState<AssetData>({
     assetId: assetData.id || '',
     landDetailId: assetData['土地明細ID'] || '',
@@ -394,10 +398,26 @@ export function OneIdleAssetDetail({ assetId, onBack, assetData }: OneIdleAssetD
 
       setOriginalData(formData);
       setIsModified(false);
-      alert('更新成功');
+      
+      // 顯示成功訊息
+      toast({
+        title: "更新成功",
+        description: "資產資料已成功更新",
+      });
+
+      // 通知父組件更新成功
+      onUpdateSuccess?.();
+      
+      // 返回列表
+      onBack();
+
     } catch (error) {
       console.error('更新錯誤:', error);
-      alert('更新失敗，請稍後再試');
+      toast({
+        variant: "destructive",
+        title: "更新失敗",
+        description: "更新資料時發生錯誤，請稍後再試",
+      });
     }
   };
 

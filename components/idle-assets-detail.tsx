@@ -14,6 +14,7 @@ import { IdleAssetTable } from '@/components/idle-asset-table'
 import dynamic from 'next/dynamic'
 import { OneIdleAssetDetail } from '@/components/one-idle-asset-detail'
 import { Asset, SortConfig } from '@/components/types'
+import { useToast } from "@/hooks/use-toast"
 
 const Header = dynamic(
   () => import('@/components/header').then(mod => mod.Header),
@@ -35,36 +36,36 @@ export function IdleAssetsDetailComponent() {
   const [sortConfig, setSortConfig] = useState<SortConfig>({ key: null, direction: 'asc' })
   const [selectedAsset, setSelectedAsset] = useState<Asset | null>(null);
 
-  useEffect(() => {
-    const fetchIdleAssets = async () => {
-      if (typeof window !== 'undefined') {
-        const token = localStorage.getItem('access_token')
-        if (!token) {
-          router.push('/login')
-          return
-        }
+  const fetchIdleAssets = async () => {
+    if (typeof window !== 'undefined') {
+      const token = localStorage.getItem('access_token')
+      if (!token) {
+        router.push('/login')
+        return
+      }
 
-        try {
-          const response = await fetch('http://localhost:8000/api/v1/idle', {
-            headers: {
-              'Authorization': `Bearer ${token}`
-            }
-          })
-
-          if (!response.ok) {
-            throw new Error('Failed to fetch idle assets')
+      try {
+        const response = await fetch('http://localhost:8000/api/v1/idle', {
+          headers: {
+            'Authorization': `Bearer ${token}`
           }
+        })
 
-          const data = await response.json()
-          setAssets(data)
-        } catch (error) {
-          console.error('Error fetching idle assets:', error)
-        } finally {
-          setIsLoading(false)
+        if (!response.ok) {
+          throw new Error('Failed to fetch idle assets')
         }
+
+        const data = await response.json()
+        setAssets(data)
+      } catch (error) {
+        console.error('Error fetching idle assets:', error)
+      } finally {
+        setIsLoading(false)
       }
     }
+  }
 
+  useEffect(() => {
     fetchIdleAssets()
   }, [router])
 
@@ -175,6 +176,7 @@ export function IdleAssetsDetailComponent() {
             assetId={selectedAsset.id} 
             onBack={() => setSelectedAsset(null)}
             assetData={selectedAsset}
+            onUpdateSuccess={fetchIdleAssets}
           />
         </div>
       </div>
