@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button"
 import { Drawer, DrawerClose, DrawerContent, DrawerHeader, DrawerTitle, DrawerDescription } from "@/components/ui/drawer"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { useToast } from "@/hooks/use-toast"
 
 const mapContainerStyle = {
   width: "100%",
@@ -46,6 +47,7 @@ export function LocationDrawerComponent({
   initialCoordinates = ""
 }: LocationDrawerProps) {
   const { isLoaded, loadError } = useGoogleMaps()
+  const { toast } = useToast()
   const [map, setMap] = React.useState<google.maps.Map | null>(null)
   const [searchValue, setSearchValue] = React.useState("")
   const [address, setAddress] = React.useState("")
@@ -54,42 +56,97 @@ export function LocationDrawerComponent({
 
   React.useEffect(() => {
     if (open) {
-      setAddress(initialAddress)
+      setAddress(initialAddress);
       
-      if (initialCoordinates) {
+      if (initialCoordinates && initialCoordinates !== '()') {
         try {
           const coords = formatCoordinates(initialCoordinates);
           if (!isNaN(coords.lat) && !isNaN(coords.lng)) {
-            setMarker(coords)
-            map?.panTo(coords)
-            // 保持顯示格式為 (經度,緯度)
-            setCoordinates(`(${coords.lng.toFixed(6)},${coords.lat.toFixed(6)})`)
+            setMarker(coords);
+            map?.panTo(coords);
+            setCoordinates(`(${coords.lat.toFixed(6)},${coords.lng.toFixed(6)})`);
+          } else if (initialAddress && isLoaded) {
+            // 如果座標無效但有地址，則使用地址獲取座標
+            const geocoder = new window.google.maps.Geocoder();
+            geocoder.geocode({
+              address: initialAddress,
+              language: 'zh-TW'
+            }).then(response => {
+              if (response.results && response.results.length > 0) {
+                const location = response.results[0].geometry.location;
+                const latLng = {
+                  lat: location.lat(),
+                  lng: location.lng()
+                };
+                setMarker(latLng);
+                map?.panTo(latLng);
+                setCoordinates(`(${latLng.lat.toFixed(6)},${latLng.lng.toFixed(6)})`);
+              }
+            }).catch(error => {
+              console.error('Geocoding error:', error);
+              toast({
+                variant: "destructive",
+                title: "地址查詢錯誤",
+                description: "無法找到該地址的定位點，請確認地址是否正確。",
+              })
+            });
           }
         } catch (error) {
-          console.error('Error parsing coordinates:', error)
+          console.error('Error parsing coordinates:', error);
+          if (initialAddress && isLoaded) {
+            const geocoder = new window.google.maps.Geocoder();
+            geocoder.geocode({
+              address: initialAddress,
+              language: 'zh-TW'
+            }).then(response => {
+              if (response.results && response.results.length > 0) {
+                const location = response.results[0].geometry.location;
+                const latLng = {
+                  lat: location.lat(),
+                  lng: location.lng()
+                };
+                setMarker(latLng);
+                map?.panTo(latLng);
+                setCoordinates(`(${latLng.lat.toFixed(6)},${latLng.lng.toFixed(6)})`);
+              }
+            }).catch(error => {
+              console.error('Geocoding error:', error);
+              toast({
+                variant: "destructive",
+                title: "地址查詢錯誤",
+                description: "無法找到該地址的定位點，請確認地址是否正確。",
+              })
+            });
+          }
         }
       } else if (initialAddress && isLoaded) {
-        const geocoder = new window.google.maps.Geocoder()
+        // 如果沒有座標但有地址，則使用地址獲取座標
+        const geocoder = new window.google.maps.Geocoder();
         geocoder.geocode({
           address: initialAddress,
           language: 'zh-TW'
         }).then(response => {
           if (response.results && response.results.length > 0) {
-            const location = response.results[0].geometry.location
+            const location = response.results[0].geometry.location;
             const latLng = {
               lat: location.lat(),
               lng: location.lng()
-            }
-            setMarker(latLng)
-            map?.panTo(latLng)
-            setCoordinates(`(${latLng.lng.toFixed(6)},${latLng.lat.toFixed(6)})`)
+            };
+            setMarker(latLng);
+            map?.panTo(latLng);
+            setCoordinates(`(${latLng.lat.toFixed(6)},${latLng.lng.toFixed(6)})`);
           }
         }).catch(error => {
-          console.error('Geocoding error:', error)
-        })
+          console.error('Geocoding error:', error);
+          toast({
+            variant: "destructive",
+            title: "地址查詢錯誤",
+            description: "無法找到該地址的定位點，請確認地址是否正確。",
+          })
+        });
       }
     }
-  }, [open, initialAddress, initialCoordinates, map, isLoaded])
+  }, [open, initialAddress, initialCoordinates, map, isLoaded, toast])
 
   const handleMapClick = async (event: google.maps.MapMouseEvent) => {
     if (!event.latLng) return
