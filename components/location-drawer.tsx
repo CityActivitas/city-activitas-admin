@@ -6,7 +6,7 @@ import { GoogleMap, MarkerF } from "@react-google-maps/api"
 import { useGoogleMaps } from "./providers/google-maps-provider"
 
 import { Button } from "@/components/ui/button"
-import { Drawer, DrawerClose, DrawerContent, DrawerHeader, DrawerTitle } from "@/components/ui/drawer"
+import { Drawer, DrawerClose, DrawerContent, DrawerHeader, DrawerTitle, DrawerDescription } from "@/components/ui/drawer"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 
@@ -177,6 +177,9 @@ export function LocationDrawerComponent({
       <DrawerContent className="max-h-[90vh]">
         <DrawerHeader className="border-b">
           <DrawerTitle>地址查詢</DrawerTitle>
+          <DrawerDescription>
+            點選地圖或輸入地址來選擇位置
+          </DrawerDescription>
         </DrawerHeader>
         <div className="p-4 flex flex-col gap-4 h-[calc(90vh-4rem)]">
           <div className="flex gap-2 flex-shrink-0">
