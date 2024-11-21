@@ -11,7 +11,10 @@ Set up the `.env` file:
 GOOGLE_MAPS_API_KEY=<your-google-maps-api-key>
 ```
 
-Run the development server:
+Make sure you have run [the backend server](https://github.com/cityactivitas/admin-backend).
+
+
+Start the development server:
 
 ```bash
 npm run dev
