@@ -41,8 +41,12 @@ export function Login() {
       localStorage.setItem('access_token', data.access_token)
       localStorage.setItem('user', JSON.stringify(data.user))
       
-      // 導向到 dashboard
-      router.push('/dashboard')
+      // 檢查用戶角色並導向對應頁面
+      if (data.user?.user_metadata?.system_role === 'reporter') {
+        router.push('/reporter-dashboard')
+      } else {
+        router.push('/dashboard')
+      }
     } catch (err) {
       setError('帳號或密碼錯誤')
     }
