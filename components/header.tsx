@@ -7,6 +7,9 @@ import { useEffect, useState } from 'react'
 
 type UserData = {
   email: string
+  user_metadata?: {
+    system_role?: string
+  }
   // 其他可能的使用者資料欄位
 }
 
@@ -32,7 +35,10 @@ export function Header() {
   }
 
   const handleTitleClick = () => {
-    router.push('/dashboard')
+    const dashboardPath = user?.user_metadata?.system_role === 'reporter' 
+      ? '/reporter-dashboard' 
+      : '/dashboard'
+    router.push(dashboardPath)
   }
 
   return (
