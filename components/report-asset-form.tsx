@@ -438,6 +438,88 @@ export function ReportAssetForm() {
             )}
           />
 
+          <FormField
+            control={form.control}
+            name="activation_status"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>活化辦理情形</FormLabel>
+                <FormControl>
+                  <Textarea 
+                    {...field}
+                    placeholder="請說明目前活化辦理的進度與情形"
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="estimated_schedule"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>預估活化時程</FormLabel>
+                <FormControl>
+                  <Input 
+                    {...field}
+                    type="date"
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="delisting_request"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>是否申請解除列管</FormLabel>
+                <FormControl>
+                  <RadioGroup
+                    onValueChange={(value) => field.onChange(value === "true")}
+                    defaultValue={field.value ? "true" : "false"}
+                    className="flex gap-4"
+                  >
+                    <FormItem className="flex items-center space-x-2">
+                      <FormControl>
+                        <RadioGroupItem value="true" />
+                      </FormControl>
+                      <FormLabel className="font-normal">是</FormLabel>
+                    </FormItem>
+                    <FormItem className="flex items-center space-x-2">
+                      <FormControl>
+                        <RadioGroupItem value="false" />
+                      </FormControl>
+                      <FormLabel className="font-normal">否</FormLabel>
+                    </FormItem>
+                  </RadioGroup>
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="delisting_reason"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>解除列管原因</FormLabel>
+                <FormControl>
+                  <Textarea 
+                    {...field}
+                    placeholder="若申請解除列管，請說明原因"
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
           {/* 備註 */}
           <FormField
             control={form.control}
