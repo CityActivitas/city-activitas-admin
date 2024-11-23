@@ -269,6 +269,7 @@ export function ReportAssetForm() {
                     <SelectContent>
                       <SelectItem value="市有土地">市有土地</SelectItem>
                       <SelectItem value="國有土地">國有土地</SelectItem>
+                      <SelectItem value="私有土地">私有土地</SelectItem>
                     </SelectContent>
                   </Select>
                   <FormMessage />
@@ -282,17 +283,12 @@ export function ReportAssetForm() {
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>使用分區</FormLabel>
-                  <Select onValueChange={field.onChange} defaultValue={field.value}>
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder="選擇使用分區" />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      <SelectItem value="學校用地">學校用地</SelectItem>
-                      <SelectItem value="保護區">保護區</SelectItem>
-                    </SelectContent>
-                  </Select>
+                  <FormControl>
+                    <Input 
+                      {...field} 
+                      placeholder="例如: 鄉村區"
+                    />
+                  </FormControl>
                   <FormMessage />
                 </FormItem>
               )}
@@ -305,16 +301,12 @@ export function ReportAssetForm() {
             render={({ field }) => (
               <FormItem>
                 <FormLabel>土地用途</FormLabel>
-                <Select onValueChange={field.onChange} defaultValue={field.value}>
-                  <FormControl>
-                    <SelectTrigger>
-                      <SelectValue placeholder="選擇土地用途" />
-                    </SelectTrigger>
-                  </FormControl>
-                  <SelectContent>
-                    <SelectItem value="特定目的事業用地">特定目的事業用地</SelectItem>
-                  </SelectContent>
-                </Select>
+                <FormControl>
+                  <Input 
+                    {...field} 
+                    placeholder="例如: 加油站專用區"
+                  />
+                </FormControl>
                 <FormMessage />
               </FormItem>
             )}
