@@ -23,6 +23,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
 import * as z from "zod"
+import { AgenciesDrawerComponent } from "@/components/agencies-drawer"
 
 const formSchema = z.object({
   managing_agency: z.string().min(1, { message: "請輸入管理機關" }),
@@ -88,12 +89,64 @@ export function ReportAssetForm() {
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
           {/* 基本資訊 */}
           <div className="space-y-4">
-            {/* 原有的管理機關和標的名稱欄位保持不變 */}
-            
-            {/* 地理位置資訊 */}
-            <div className="grid grid-cols-2 gap-4">
-              {/* 原有的行政區和地段欄位保持不變 */}
-            </div>
+            <FormField
+              control={form.control}
+              name="managing_agency"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>管理機關</FormLabel>
+                  <FormControl>
+                    <AgenciesDrawerComponent
+                      currentUnit={field.value}
+                      onUnitSelect={(unit) => field.onChange(unit)}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="asset_name"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>標的名稱</FormLabel>
+                  <FormControl>
+                    <Input {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="district_id"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>行政區</FormLabel>
+                  <FormControl>
+                    <Input {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="section"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>地段</FormLabel>
+                  <FormControl>
+                    <Input {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
 
             <FormField
               control={form.control}
