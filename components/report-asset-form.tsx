@@ -25,6 +25,8 @@ import { useForm } from "react-hook-form"
 import * as z from "zod"
 import { AgenciesDrawerComponent } from "@/components/agencies-drawer"
 import { DistrictSelectorDrawerComponent } from "@/components/district-selector-drawer"
+import { useState } from 'react'
+import { LocationDrawerComponent } from "@/components/location-drawer"
 
 const formSchema = z.object({
   managing_agency: z.string().min(1, { message: "請輸入管理機關" }),
@@ -33,6 +35,7 @@ const formSchema = z.object({
   section: z.string().min(1, { message: "請輸入地段" }),
   lot_number: z.string().min(1, { message: "請輸入地號" }),
   address: z.string().min(1, { message: "請輸入地址" }),
+  coordinates: z.string().optional(),
   usage_license: z.enum(["有", "無"]).optional(),
   building_license: z.enum(["有", "無", "部分"]).optional(),
   land_type: z.string().min(1, { message: "請選擇土地種類" }),
@@ -50,6 +53,8 @@ const formSchema = z.object({
 })
 
 export function ReportAssetForm() {
+  const [locationDrawerOpen, setLocationDrawerOpen] = useState(false)
+
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -59,6 +64,7 @@ export function ReportAssetForm() {
       section: "",
       lot_number: "",
       address: "",
+      coordinates: "",
       land_type: "",
       zone_type: "",
       land_use: "",
@@ -173,11 +179,44 @@ export function ReportAssetForm() {
                 <FormItem>
                   <FormLabel>地址</FormLabel>
                   <FormControl>
-                    <Input {...field} />
+                    <Input 
+                      {...field} 
+                      onClick={() => setLocationDrawerOpen(true)}
+                      readOnly
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
               )}
+            />
+
+            <FormField
+              control={form.control}
+              name="coordinates"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>座標</FormLabel>
+                  <FormControl>
+                    <Input 
+                      {...field}
+                      onClick={() => setLocationDrawerOpen(true)}
+                      readOnly
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <LocationDrawerComponent 
+              open={locationDrawerOpen} 
+              onOpenChange={setLocationDrawerOpen}
+              onConfirm={(address, coordinates) => {
+                form.setValue('address', address);
+                form.setValue('coordinates', coordinates);
+              }}
+              initialAddress={form.getValues('address')}
+              initialCoordinates={form.getValues('coordinates')}
             />
           </div>
 
