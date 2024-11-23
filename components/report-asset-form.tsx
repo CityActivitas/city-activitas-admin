@@ -24,6 +24,7 @@ import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
 import * as z from "zod"
 import { AgenciesDrawerComponent } from "@/components/agencies-drawer"
+import { DistrictSelectorDrawerComponent } from "@/components/district-selector-drawer"
 
 const formSchema = z.object({
   managing_agency: z.string().min(1, { message: "請輸入管理機關" }),
@@ -127,7 +128,10 @@ export function ReportAssetForm() {
                 <FormItem>
                   <FormLabel>行政區</FormLabel>
                   <FormControl>
-                    <Input {...field} />
+                    <DistrictSelectorDrawerComponent
+                      currentDistrict={field.value}
+                      onDistrictSelect={(district) => field.onChange(district)}
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
