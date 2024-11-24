@@ -41,13 +41,13 @@ import {
 const formSchema = z.object({
   managing_agency: z.string().min(1, { message: "請輸入管理機關" }),
   asset_name: z.string().min(1, { message: "請輸入標的名稱" }),
-  district_id: z.string().min(1, { message: "請選擇行政區" }),
+  district: z.string().min(1, { message: "請選擇行政區" }),
   section: z.string().min(1, { message: "請輸入地段" }),
   lot_number: z.string().min(1, { message: "請輸入地號" }),
   address: z.string().min(1, { message: "請輸入地址" }),
   coordinates: z.string().optional(),
-  usage_license: z.enum(["有", "無"]).optional(),
-  building_license: z.enum(["有", "無", "部分"]).optional(),
+  has_usage_license: z.enum(["有", "無"]).optional(),
+  has_building_license: z.enum(["有", "無", "部分"]).optional(),
   land_type: z.string().min(1, { message: "請選擇土地種類" }),
   zone_type: z.string().min(1, { message: "請選擇使用分區" }),
   land_use: z.string().min(1, { message: "請選擇土地用途" }),
@@ -58,10 +58,10 @@ const formSchema = z.object({
     required_error: "請選擇資產使用情形" 
   }),
   activation_status: z.string().optional(),
-  estimated_schedule: z.string().optional(),
-  delisting_request: z.boolean().optional(),
+  estimated_activation_date: z.string().optional(),
+  is_requesting_delisting: z.boolean().optional(),
   delisting_reason: z.string().optional(),
-  notes: z.string().optional(),
+  note: z.string().optional(),
 })
 
 export function ReportAssetForm() {
@@ -72,7 +72,7 @@ export function ReportAssetForm() {
     defaultValues: {
       managing_agency: "",
       asset_name: "",
-      district_id: "",
+      district: "",
       section: "",
       lot_number: "",
       address: "",
@@ -85,10 +85,12 @@ export function ReportAssetForm() {
       usage_description: "",
       usage_status: "閒置",
       activation_status: "",
-      estimated_schedule: "",
-      delisting_request: false,
+      estimated_activation_date: "",
+      is_requesting_delisting: false,
       delisting_reason: "",
-      notes: "",
+      note: "",
+      has_usage_license: undefined,
+      has_building_license: undefined,
     },
   })
 
@@ -141,7 +143,7 @@ export function ReportAssetForm() {
 
             <FormField
               control={form.control}
-              name="district_id"
+              name="district"
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>行政區</FormLabel>
@@ -236,7 +238,7 @@ export function ReportAssetForm() {
           <div className="grid grid-cols-2 gap-4">
             <FormField
               control={form.control}
-              name="usage_license"
+              name="has_usage_license"
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>使用執照</FormLabel>
@@ -267,7 +269,7 @@ export function ReportAssetForm() {
 
             <FormField
               control={form.control}
-              name="building_license"
+              name="has_building_license"
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>建築執照</FormLabel>
@@ -469,7 +471,7 @@ export function ReportAssetForm() {
 
           <FormField
             control={form.control}
-            name="estimated_schedule"
+            name="estimated_activation_date"
             render={({ field }) => (
               <FormItem>
                 <FormLabel>預估活化時程</FormLabel>
@@ -486,7 +488,7 @@ export function ReportAssetForm() {
 
           <FormField
             control={form.control}
-            name="delisting_request"
+            name="is_requesting_delisting"
             render={({ field }) => (
               <FormItem>
                 <FormLabel>是否申請解除列管</FormLabel>
@@ -535,7 +537,7 @@ export function ReportAssetForm() {
           {/* 備註 */}
           <FormField
             control={form.control}
-            name="notes"
+            name="note"
             render={({ field }) => (
               <FormItem>
                 <FormLabel>備註</FormLabel>
@@ -564,13 +566,13 @@ export function ReportAssetForm() {
                     const label = {
                       managing_agency: '管理機關',
                       asset_name: '標的名稱',
-                      district_id: '行政區',
+                      district: '行政區',
                       section: '地段',
                       lot_number: '地號',
                       address: '地址',
                       coordinates: '座標',
-                      usage_license: '使用執照',
-                      building_license: '建築執照',
+                      has_usage_license: '使用執照',
+                      has_building_license: '建築執照',
                       land_type: '土地種類',
                       zone_type: '使用分區',
                       land_use: '土地用途',
@@ -579,17 +581,17 @@ export function ReportAssetForm() {
                       usage_description: '使用情形說明',
                       usage_status: '資產使用情形',
                       activation_status: '活化辦理情形',
-                      estimated_schedule: '預估活化時程',
-                      delisting_request: '是否申請解除列管',
+                      estimated_activation_date: '預估活化時程',
+                      is_requesting_delisting: '是否申請解除列管',
                       delisting_reason: '解除列管原因',
-                      notes: '備註'
+                      note: '備註'
                     }[key];
 
                     return (
                       <div key={key} className="flex">
                         <span className="w-32 flex-shrink-0">{label}:</span>
                         <span>
-                          {key === 'delisting_request' 
+                          {key === 'is_requesting_delisting' 
                             ? (value ? '是' : '否')
                             : (value || '無')}
                         </span>
