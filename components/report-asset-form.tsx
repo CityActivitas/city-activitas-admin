@@ -37,6 +37,7 @@ import {
   DialogDescription,
   DialogClose
 } from "@/components/ui/dialog"
+import { useToast } from "@/hooks/use-toast"
 
 const formSchema = z.object({
   managing_agency: z.string().min(1, { message: "請輸入管理機關" }),
@@ -65,6 +66,7 @@ const formSchema = z.object({
 })
 
 export function ReportAssetForm() {
+  const { toast } = useToast()
   const [locationDrawerOpen, setLocationDrawerOpen] = useState(false)
 
   const form = useForm<z.infer<typeof formSchema>>({
@@ -94,9 +96,57 @@ export function ReportAssetForm() {
     },
   })
 
-  function onSubmit(values: z.infer<typeof formSchema>) {
-    console.log(values)
-    // TODO: 實作提交邏輯
+  async function onSubmit(values: z.infer<typeof formSchema>) {
+    try {
+      const userStr = localStorage.getItem('user')
+      const user = userStr ? JSON.parse(userStr) : null
+      const reporterEmail = user?.email
+
+      if (!reporterEmail) {
+        toast({
+          variant: "destructive",
+          title: "錯誤",
+          description: "無法取得使用者資訊",
+        })
+        return
+      }
+
+      const submitData = {
+        ...values,
+        reporter_email: reporterEmail,
+        estimated_activation_date: values.estimated_activation_date || null,
+        area: Number(values.area) || 0
+      }
+
+      console.log('Submitting data:', submitData)
+
+      const response = await fetch('http://localhost:8000/api/v1/proposals/asset-proposals', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('access_token')}`
+        },
+        body: JSON.stringify(submitData)
+      })
+
+      if (!response.ok) {
+        const errorData = await response.json()
+        throw new Error(errorData.detail || '提交失敗')
+      }
+
+      toast({
+        title: "提交成功",
+        description: "資產提報已成功送出",
+      })
+      
+    } catch (error) {
+      console.error('提交錯誤:', error)
+      toast({
+        variant: "destructive",
+        title: "提交失敗",
+        description: "提交資料時發生錯誤，請稍後再試",
+      })
+    }
   }
 
   return (
@@ -576,16 +626,16 @@ export function ReportAssetForm() {
                       land_type: '土地種類',
                       zone_type: '使用分區',
                       land_use: '土地用途',
-                      area: '面積',
-                      floor_area: '樓地板面積',
-                      usage_description: '使用情形說明',
+                      area: '面積（平方公尺）',
+                      floor_area: '樓地板面積（平方公尺）',
+                      usage_description: '目前使用情形說明',
                       usage_status: '資產使用情形',
                       activation_status: '活化辦理情形',
                       estimated_activation_date: '預估活化時程',
                       is_requesting_delisting: '是否申請解除列管',
                       delisting_reason: '解除列管原因',
                       note: '備註'
-                    }[key];
+                    }[key] || key;
 
                     return (
                       <div key={key} className="flex">
