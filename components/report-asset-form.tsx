@@ -27,6 +27,16 @@ import { AgenciesDrawerComponent } from "@/components/agencies-drawer"
 import { DistrictSelectorDrawerComponent } from "@/components/district-selector-drawer"
 import { useState } from 'react'
 import { LocationDrawerComponent } from "@/components/location-drawer"
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+  DialogFooter,
+  DialogDescription,
+  DialogClose
+} from "@/components/ui/dialog"
 
 const formSchema = z.object({
   managing_agency: z.string().min(1, { message: "請輸入管理機關" }),
@@ -538,7 +548,67 @@ export function ReportAssetForm() {
           />
 
           <div className="flex justify-end gap-4 mt-6">
-            <Button type="submit">提交</Button>
+            <Dialog>
+              <DialogTrigger asChild>
+                <Button>提交</Button>
+              </DialogTrigger>
+              <DialogContent className="max-w-2xl">
+                <DialogHeader>
+                  <DialogTitle>確認提交</DialogTitle>
+                  <DialogDescription>
+                    提交的資料如下：
+                  </DialogDescription>
+                </DialogHeader>
+                <div className="space-y-2 text-sm max-h-[60vh] overflow-y-auto">
+                  {Object.entries(form.getValues()).map(([key, value]) => {
+                    const label = {
+                      managing_agency: '管理機關',
+                      asset_name: '標的名稱',
+                      district_id: '行政區',
+                      section: '地段',
+                      lot_number: '地號',
+                      address: '地址',
+                      coordinates: '座標',
+                      usage_license: '使用執照',
+                      building_license: '建築執照',
+                      land_type: '土地種類',
+                      zone_type: '使用分區',
+                      land_use: '土地用途',
+                      area: '面積',
+                      floor_area: '樓地板面積',
+                      usage_description: '使用情形說明',
+                      usage_status: '資產使用情形',
+                      activation_status: '活化辦理情形',
+                      estimated_schedule: '預估活化時程',
+                      delisting_request: '是否申請解除列管',
+                      delisting_reason: '解除列管原因',
+                      notes: '備註'
+                    }[key];
+
+                    return (
+                      <div key={key} className="flex">
+                        <span className="w-32 flex-shrink-0">{label}:</span>
+                        <span>
+                          {key === 'delisting_request' 
+                            ? (value ? '是' : '否')
+                            : (value || '無')}
+                        </span>
+                      </div>
+                    );
+                  })}
+                </div>
+                <DialogFooter>
+                  <DialogClose asChild>
+                    <Button variant="outline">
+                      取消
+                    </Button>
+                  </DialogClose>
+                  <Button onClick={form.handleSubmit(onSubmit)}>
+                    確認提交
+                  </Button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
           </div>
         </form>
       </Form>
