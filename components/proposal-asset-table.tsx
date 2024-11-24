@@ -19,7 +19,7 @@ interface AssetProposal {
   district_id: string
   section: string
   address: string
-  reporter_email: string
+  land_type: string
   proposal_status: string
   created_at: string
 }
@@ -85,7 +85,7 @@ export function ProposalAssetTable({
                 ['行政區', 'district_id'],
                 ['地段', 'section'],
                 ['地址', 'address'],
-                ['提報人', 'reporter_email'],
+                ['土地種類', 'land_type'],
                 ['狀態', 'proposal_status'],
                 ['提報時間', 'created_at']
               ].map(([label, key]) => (
@@ -123,7 +123,7 @@ export function ProposalAssetTable({
                 </TableCell>
                 <TableCell>{proposal.section}</TableCell>
                 <TableCell>{proposal.address}</TableCell>
-                <TableCell>{proposal.reporter_email}</TableCell>
+                <TableCell>{proposal.land_type}</TableCell>
                 <TableCell>{proposal.proposal_status}</TableCell>
                 <TableCell>{proposal.created_at.split('T')[0]}</TableCell>
               </TableRow>
