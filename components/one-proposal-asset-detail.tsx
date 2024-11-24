@@ -60,15 +60,16 @@ export function OneProposalAssetDetail({
   // 從 localStorage 獲取用戶角色
   const userRole = JSON.parse(localStorage.getItem('user') || '{}')?.user_metadata?.system_role
 
-  // 判斷是否可以編輯特定欄位
+  // 判斷欄位是否可以編輯
   const canEdit = (fieldName: string) => {
+    // 這些欄位永遠不能編輯
+    const nonEditableFields = ['id', 'reporter_email', 'created_at', 'updated_at', 'reviewed_at']
+    if (nonEditableFields.includes(fieldName)) return false
+
     if (userRole === 'admin') return true
     
     if (userRole === 'reporter') {
-      // reporter 不能編輯審查備註
       if (fieldName === 'reviewer_note') return false
-      
-      // 只有在特定狀態下才能編輯其他欄位
       return ['提案中', '需要修改'].includes(proposal.proposal_status)
     }
 
@@ -122,6 +123,20 @@ export function OneProposalAssetDetail({
     }))
   }
 
+  // 格式化日期時間
+  const formatDateTime = (dateString: string) => {
+    if (!dateString) return ''
+    const date = new Date(dateString)
+    return date.toLocaleString('zh-TW', {
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: false
+    }).replace(/\//g, '-')
+  }
+
   return (
     <div className="container mx-auto px-4 space-y-4">
       <div className="flex items-center justify-between">
@@ -151,8 +166,50 @@ export function OneProposalAssetDetail({
       <Card>
         <CardContent className="p-4 space-y-4">
           <div className="grid grid-cols-2 gap-4">
-            {Object.entries(proposal)
-              .filter(([key]) => {
+            {[
+              // 基本資訊
+              'id',
+              'managing_agency',
+              'target_name',
+              'district',
+              'section',
+              'lot_number',
+              'address',
+              'coordinates',
+              
+              // 執照資訊
+              'has_usage_license',
+              'has_building_license',
+              
+              // 土地資訊
+              'land_type',
+              'zone_type',
+              'land_use',
+              
+              // 面積資訊
+              'area',
+              'floor_area',
+              
+              // 使用狀態
+              'usage_description',
+              'usage_status',
+              'activation_status',
+              'estimated_activation_date',
+              
+              // 列管資訊
+              'is_requesting_delisting',
+              'delisting_reason',
+              
+              // 備註與其他資訊
+              'note',
+              'reporter_email',
+              'proposal_status',
+              'reviewer_note',
+              'created_at',
+              'updated_at',
+              'reviewed_at'
+            ]
+              .filter(key => {
                 if (userRole === 'admin') {
                   return key !== 'reviewer_id'
                 } else if (userRole === 'reporter') {
@@ -160,25 +217,26 @@ export function OneProposalAssetDetail({
                 }
                 return true
               })
-              .map(([key, value]) => {
-                // 根據不同欄位顯示對應的值
+              .map(key => {
+                const value = proposal[key]
                 let displayValue = value
+
                 if (key === 'agency_id') {
                   displayValue = agencyMap[value] || value
                 } else if (key === 'district_id') {
                   displayValue = districtMap[value] || value
+                } else if (['created_at', 'updated_at', 'reviewed_at'].includes(key)) {
+                  displayValue = formatDateTime(value)
                 }
 
                 const label = {
                   id: '提案編號',
+                  managing_agency: '管理機關',
                   target_name: '標的名稱',
-                  agency_id: '管理機關',
-                  district_id: '行政區',
+                  district: '行政區',
                   section: '地段',
+                  lot_number: '地號',
                   address: '地址',
-                  reporter_email: '提報人信箱',
-                  proposal_status: '提案狀態',
-                  created_at: '提報時間',
                   coordinates: '座標',
                   has_usage_license: '使用執照',
                   has_building_license: '建築執照',
@@ -194,10 +252,12 @@ export function OneProposalAssetDetail({
                   is_requesting_delisting: '是否申請解除列管',
                   delisting_reason: '解除列管原因',
                   note: '備註',
-                  lot_number: '地號',
+                  reporter_email: '提報人信箱',
+                  proposal_status: '提案狀態',
+                  reviewer_note: '審查備註',
+                  created_at: '提報時間',
                   updated_at: '更新時間',
-                  reviewer_id: '審查者ID',
-                  reviewer_note: '審查備註'
+                  reviewed_at: '審查時間'
                 }[key] || key
 
                 return (
@@ -207,7 +267,7 @@ export function OneProposalAssetDetail({
                       value={isEditing ? editedData[key] || '' : displayValue || ''}
                       onChange={(e) => handleFieldChange(key, e.target.value)}
                       readOnly={!isEditing || !canEdit(key)}
-                      className={!isEditing || !canEdit(key) ? 'bg-gray-50' : ''}
+                      className={(!isEditing || !canEdit(key)) ? 'bg-gray-50' : ''}
                     />
                   </div>
                 )
