@@ -9,6 +9,8 @@ import {
   TableRow,
 } from "@/components/ui/table"
 import { ChevronDown, ChevronUp } from "lucide-react"
+import { useState } from 'react'
+import { OneProposalAssetDetail } from './one-proposal-asset-detail'
 
 interface AssetProposal {
   id: string
@@ -57,6 +59,19 @@ export function ProposalAssetTable({
   agencyMap,
   districtMap 
 }: ProposalAssetTableProps) {
+  const [selectedProposal, setSelectedProposal] = useState<AssetProposal | null>(null)
+
+  if (selectedProposal) {
+    return (
+      <OneProposalAssetDetail 
+        proposal={selectedProposal}
+        onBack={() => setSelectedProposal(null)}
+        agencyMap={agencyMap}
+        districtMap={districtMap}
+      />
+    )
+  }
+
   return (
     <div className="relative rounded-md border mt-2">
       <div className="overflow-y-scroll max-h-[70vh]">
@@ -92,7 +107,7 @@ export function ProposalAssetTable({
               <TableRow 
                 key={proposal.id}
                 className="cursor-pointer hover:bg-gray-100"
-                onClick={() => onRowClick?.(proposal.id)}
+                onClick={() => setSelectedProposal(proposal)}
               >
                 <TableCell>{proposal.id}</TableCell>
                 <TableCell>{proposal.target_name}</TableCell>
