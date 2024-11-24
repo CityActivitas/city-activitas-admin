@@ -1,10 +1,12 @@
 'use client'
 
+import { useState, useEffect } from 'react'
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { ArrowLeft } from 'lucide-react'
+import { useToast } from "@/hooks/use-toast"
 
 interface ProposalAsset {
   id: string
@@ -45,152 +47,171 @@ interface OneProposalAssetDetailProps {
 }
 
 export function OneProposalAssetDetail({ 
-  proposal,
+  proposal: initialProposal,
   onBack,
   agencyMap,
   districtMap
 }: OneProposalAssetDetailProps) {
+  const { toast } = useToast()
+  const [proposal, setProposal] = useState(initialProposal)
+  const [isEditing, setIsEditing] = useState(false)
+  const [editedData, setEditedData] = useState(initialProposal)
+
+  // 從 localStorage 獲取用戶角色
+  const userRole = JSON.parse(localStorage.getItem('user') || '{}')?.user_metadata?.system_role
+
+  // 判斷是否可以編輯特定欄位
+  const canEdit = (fieldName: string) => {
+    if (userRole === 'admin') return true
+    
+    if (userRole === 'reporter') {
+      // reporter 不能編輯審查備註
+      if (fieldName === 'reviewer_note') return false
+      
+      // 只有在特定狀態下才能編輯其他欄位
+      return ['提案中', '需要修改'].includes(proposal.proposal_status)
+    }
+
+    return false
+  }
+
+  const handleEdit = () => {
+    setIsEditing(true)
+    setEditedData(proposal)
+  }
+
+  const handleCancel = () => {
+    setIsEditing(false)
+    setEditedData(proposal)
+  }
+
+  const handleSave = async () => {
+    try {
+      const token = localStorage.getItem('access_token')
+      const response = await fetch(`http://localhost:8000/api/v1/proposals/${proposal.id}`, {
+        method: 'PUT',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(editedData)
+      })
+
+      if (!response.ok) throw new Error('更新失敗')
+
+      const updatedProposal = await response.json()
+      setProposal(updatedProposal)
+      setIsEditing(false)
+      
+      toast({
+        title: "更新成功",
+        variant: "default",
+      })
+    } catch (error) {
+      toast({
+        title: "更新失敗",
+        variant: "destructive",
+      })
+    }
+  }
+
+  const handleFieldChange = (fieldName: string, value: string | boolean) => {
+    setEditedData(prev => ({
+      ...prev,
+      [fieldName]: value
+    }))
+  }
+
   return (
     <div className="container mx-auto px-4 space-y-4">
-      <div className="flex items-center gap-2 text-lg font-medium">
+      <div className="flex items-center justify-between">
         <Button 
           onClick={onBack} 
           variant="ghost"
           className="hover:text-primary flex items-center gap-1"
         >
           <ArrowLeft className="w-5 h-5" />
-          <span>回提案列表</span>
+          <span>返回</span>
         </Button>
+        {(userRole === 'admin' || 
+          (userRole === 'reporter' && ['提案中', '需要修改'].includes(proposal.proposal_status))) && (
+          <div className="space-x-2">
+            {!isEditing ? (
+              <Button onClick={handleEdit}>編輯</Button>
+            ) : (
+              <>
+                <Button variant="outline" onClick={handleCancel}>取消</Button>
+                <Button onClick={handleSave}>儲存</Button>
+              </>
+            )}
+          </div>
+        )}
       </div>
 
       <Card>
         <CardContent className="p-4 space-y-4">
           <div className="grid grid-cols-2 gap-4">
-            {/* 基本資訊 */}
-            <div className="space-y-2">
-              <Label>提案編號</Label>
-              <Input value={proposal.id} readOnly />
-            </div>
-            <div className="space-y-2">
-              <Label>標的名稱</Label>
-              <Input value={proposal.target_name || ''} readOnly />
-            </div>
-            <div className="space-y-2">
-              <Label>管理機關</Label>
-              <Input value={agencyMap[proposal.agency_id] || proposal.agency_id} readOnly />
-            </div>
-            <div className="space-y-2">
-              <Label>行政區</Label>
-              <Input value={districtMap[proposal.district_id] || proposal.district_id} readOnly />
-            </div>
-            <div className="space-y-2">
-              <Label>地段</Label>
-              <Input value={proposal.section} readOnly />
-            </div>
-            <div className="space-y-2">
-              <Label>地號</Label>
-              <Input value={proposal.lot_number} readOnly />
-            </div>
-            <div className="space-y-2">
-              <Label>地址</Label>
-              <Input value={proposal.address} readOnly />
-            </div>
-            <div className="space-y-2">
-              <Label>座標</Label>
-              <Input value={proposal.coordinates} readOnly />
-            </div>
+            {Object.entries(proposal)
+              .filter(([key]) => {
+                if (userRole === 'admin') {
+                  return key !== 'reviewer_id'
+                } else if (userRole === 'reporter') {
+                  return !['reviewer_id', 'reporter_email'].includes(key)
+                }
+                return true
+              })
+              .map(([key, value]) => {
+                // 根據不同欄位顯示對應的值
+                let displayValue = value
+                if (key === 'agency_id') {
+                  displayValue = agencyMap[value] || value
+                } else if (key === 'district_id') {
+                  displayValue = districtMap[value] || value
+                }
 
-            {/* 執照資訊 */}
-            <div className="space-y-2">
-              <Label>使用執照</Label>
-              <Input value={proposal.has_usage_license} readOnly />
-            </div>
-            <div className="space-y-2">
-              <Label>建築執照</Label>
-              <Input value={proposal.has_building_license} readOnly />
-            </div>
+                const label = {
+                  id: '提案編號',
+                  target_name: '標的名稱',
+                  agency_id: '管理機關',
+                  district_id: '行政區',
+                  section: '地段',
+                  address: '地址',
+                  reporter_email: '提報人信箱',
+                  proposal_status: '提案狀態',
+                  created_at: '提報時間',
+                  coordinates: '座標',
+                  has_usage_license: '使用執照',
+                  has_building_license: '建築執照',
+                  land_type: '土地種類',
+                  zone_type: '使用分區',
+                  land_use: '土地用途',
+                  area: '面積（平方公尺）',
+                  floor_area: '樓地板面積（平方公尺）',
+                  usage_description: '使用情形說明',
+                  usage_status: '使用狀態',
+                  activation_status: '活化辦理情形',
+                  estimated_activation_date: '預估活化時程',
+                  is_requesting_delisting: '是否申請解除列管',
+                  delisting_reason: '解除列管原因',
+                  note: '備註',
+                  lot_number: '地號',
+                  updated_at: '更新時間',
+                  reviewer_id: '審查者ID',
+                  reviewer_note: '審查備註'
+                }[key] || key
 
-            {/* 土地資訊 */}
-            <div className="space-y-2">
-              <Label>土地種類</Label>
-              <Input value={proposal.land_type} readOnly />
-            </div>
-            <div className="space-y-2">
-              <Label>使用分區</Label>
-              <Input value={proposal.zone_type} readOnly />
-            </div>
-            <div className="space-y-2">
-              <Label>土地用途</Label>
-              <Input value={proposal.land_use} readOnly />
-            </div>
-
-            {/* 面積資訊 */}
-            <div className="space-y-2">
-              <Label>面積（平方公尺）</Label>
-              <Input value={proposal.area} readOnly />
-            </div>
-            <div className="space-y-2">
-              <Label>樓地板面積</Label>
-              <Input value={proposal.floor_area || ''} readOnly />
-            </div>
-
-            {/* 使用狀態 */}
-            <div className="space-y-2">
-              <Label>目前使用情形說明</Label>
-              <Input value={proposal.usage_description} readOnly />
-            </div>
-            <div className="space-y-2">
-              <Label>資產使用情形</Label>
-              <Input value={proposal.usage_status} readOnly />
-            </div>
-            <div className="space-y-2">
-              <Label>活化辦理情形</Label>
-              <Input value={proposal.activation_status} readOnly />
-            </div>
-            <div className="space-y-2">
-              <Label>預估活化時程</Label>
-              <Input value={proposal.estimated_activation_date || ''} readOnly />
-            </div>
-
-            {/* 列管狀態 */}
-            <div className="space-y-2">
-              <Label>是否申請解除列管</Label>
-              <Input value={proposal.is_requesting_delisting ? '是' : '否'} readOnly />
-            </div>
-            <div className="space-y-2">
-              <Label>解除列管原因</Label>
-              <Input value={proposal.delisting_reason || ''} readOnly />
-            </div>
-
-            {/* 其他資訊 */}
-            <div className="space-y-2">
-              <Label>提報人信箱</Label>
-              <Input value={proposal.reporter_email} readOnly />
-            </div>
-            <div className="space-y-2">
-              <Label>提案狀態</Label>
-              <Input value={proposal.proposal_status} readOnly />
-            </div>
-            <div className="space-y-2">
-              <Label>提報時間</Label>
-              <Input value={proposal.created_at.split('T')[0]} readOnly />
-            </div>
-            <div className="space-y-2">
-              <Label>更新時間</Label>
-              <Input value={proposal.updated_at.split('T')[0]} readOnly />
-            </div>
-            <div className="space-y-2">
-              <Label>審查者ID</Label>
-              <Input value={proposal.reviewer_id || ''} readOnly />
-            </div>
-            <div className="space-y-2">
-              <Label>審查備註</Label>
-              <Input value={proposal.reviewer_note || ''} readOnly />
-            </div>
-            <div className="space-y-2 col-span-2">
-              <Label>備註</Label>
-              <Input value={proposal.note || ''} readOnly />
-            </div>
+                return (
+                  <div key={key} className="space-y-2">
+                    <Label>{label}</Label>
+                    <Input
+                      value={isEditing ? editedData[key] || '' : displayValue || ''}
+                      onChange={(e) => handleFieldChange(key, e.target.value)}
+                      readOnly={!isEditing || !canEdit(key)}
+                      className={!isEditing || !canEdit(key) ? 'bg-gray-50' : ''}
+                    />
+                  </div>
+                )
+              })}
           </div>
         </CardContent>
       </Card>
