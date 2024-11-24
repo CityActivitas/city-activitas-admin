@@ -65,7 +65,11 @@ const formSchema = z.object({
   note: z.string().optional(),
 })
 
-export function ReportAssetForm() {
+interface ReportAssetFormProps {
+  onSubmitSuccess?: () => void
+}
+
+export function ReportAssetForm({ onSubmitSuccess }: ReportAssetFormProps) {
   const { toast } = useToast()
   const [locationDrawerOpen, setLocationDrawerOpen] = useState(false)
 
@@ -140,11 +144,13 @@ export function ReportAssetForm() {
       })
 
       form.reset()
-
+      
       const closeButton = document.querySelector('[data-dialog-close]') as HTMLButtonElement
       if (closeButton) {
         closeButton.click()
       }
+
+      onSubmitSuccess?.()
       
     } catch (error) {
       console.error('提交錯誤:', error)
@@ -630,7 +636,7 @@ export function ReportAssetForm() {
                       coordinates: '座標',
                       has_usage_license: '使用執照',
                       has_building_license: '建築執照',
-                      land_type: '土地種類',
+                      land_type: '��地種類',
                       zone_type: '使用分區',
                       land_use: '土地用途',
                       area: '面積（平方公尺）',

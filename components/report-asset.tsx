@@ -124,7 +124,12 @@ export function ReportAsset() {
         </div>
 
         {showForm ? (
-          <ReportAssetForm />
+          <ReportAssetForm 
+            onSubmitSuccess={() => {
+              setShowForm(false)  // 關閉表單
+              fetchProposals()    // 重新獲取列表
+            }} 
+          />
         ) : proposals.length > 0 ? (
           <ProposalAssetTable 
             proposals={sortedProposals}
