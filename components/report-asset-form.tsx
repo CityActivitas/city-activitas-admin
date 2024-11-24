@@ -43,8 +43,10 @@ const formSchema = z.object({
   land_use: z.string().min(1, { message: "請選擇土地用途" }),
   area: z.number().min(0, { message: "面積必須大於0" }),
   floor_area: z.string().optional(),
-  usage_status: z.string().min(1, { message: "請輸入資產使用情形" }),
-  current_status: z.enum(["空置", "部分空置"]),
+  usage_description: z.string().min(1, { message: "請輸入目前使用情形說明" }),
+  usage_status: z.enum(["閒置", "低度利用"], { 
+    required_error: "請選擇資產使用情形" 
+  }),
   activation_status: z.string().optional(),
   estimated_schedule: z.string().optional(),
   delisting_request: z.boolean().optional(),
@@ -70,8 +72,8 @@ export function ReportAssetForm() {
       land_use: "",
       area: 0,
       floor_area: "",
-      usage_status: "",
-      current_status: "空置",
+      usage_description: "",
+      usage_status: "閒置",
       activation_status: "",
       estimated_schedule: "",
       delisting_request: false,
@@ -392,14 +394,14 @@ export function ReportAssetForm() {
           {/* 使用狀態 */}
           <FormField
             control={form.control}
-            name="usage_status"
+            name="usage_description"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>資產使用情形</FormLabel>
+                <FormLabel>目前使用情形說明</FormLabel>
                 <FormControl>
                   <Textarea 
                     {...field} 
-                    placeholder="例如：閒置、低度利用、使用情形說明"
+                    placeholder="請說明目前的使用情形"
                   />
                 </FormControl>
                 <FormMessage />
@@ -409,10 +411,10 @@ export function ReportAssetForm() {
 
           <FormField
             control={form.control}
-            name="current_status"
+            name="usage_status"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>現況</FormLabel>
+                <FormLabel>資產使用情形</FormLabel>
                 <FormControl>
                   <RadioGroup
                     onValueChange={field.onChange}
@@ -421,15 +423,15 @@ export function ReportAssetForm() {
                   >
                     <FormItem className="flex items-center space-x-2">
                       <FormControl>
-                        <RadioGroupItem value="空置" />
+                        <RadioGroupItem value="閒置" />
                       </FormControl>
-                      <FormLabel className="font-normal">空置</FormLabel>
+                      <FormLabel className="font-normal">閒置</FormLabel>
                     </FormItem>
                     <FormItem className="flex items-center space-x-2">
                       <FormControl>
-                        <RadioGroupItem value="部分空置" />
+                        <RadioGroupItem value="低度利用" />
                       </FormControl>
-                      <FormLabel className="font-normal">部分空置</FormLabel>
+                      <FormLabel className="font-normal">低度利用</FormLabel>
                     </FormItem>
                   </RadioGroup>
                 </FormControl>
