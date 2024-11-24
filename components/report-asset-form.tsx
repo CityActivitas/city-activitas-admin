@@ -138,6 +138,13 @@ export function ReportAssetForm() {
         title: "提交成功",
         description: "資產提報已成功送出",
       })
+
+      form.reset()
+
+      const closeButton = document.querySelector('[data-dialog-close]') as HTMLButtonElement
+      if (closeButton) {
+        closeButton.click()
+      }
       
     } catch (error) {
       console.error('提交錯誤:', error)
@@ -650,7 +657,7 @@ export function ReportAssetForm() {
                   })}
                 </div>
                 <DialogFooter>
-                  <DialogClose asChild>
+                  <DialogClose asChild data-dialog-close>
                     <Button variant="outline">
                       取消
                     </Button>
