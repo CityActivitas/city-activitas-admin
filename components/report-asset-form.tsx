@@ -41,7 +41,7 @@ import { useToast } from "@/hooks/use-toast"
 
 const formSchema = z.object({
   managing_agency: z.string().min(1, { message: "請輸入管理機關" }),
-  asset_name: z.string().min(1, { message: "請輸入標的名稱" }),
+  target_name: z.string().min(1, { message: "請輸入標的名稱" }),
   district: z.string().min(1, { message: "請選擇行政區" }),
   section: z.string().min(1, { message: "請輸入地段" }),
   lot_number: z.string().min(1, { message: "請輸入地號" }),
@@ -77,7 +77,7 @@ export function ReportAssetForm({ onSubmitSuccess }: ReportAssetFormProps) {
     resolver: zodResolver(formSchema),
     defaultValues: {
       managing_agency: "",
-      asset_name: "",
+      target_name: "",
       district: "",
       section: "",
       lot_number: "",
@@ -192,7 +192,7 @@ export function ReportAssetForm({ onSubmitSuccess }: ReportAssetFormProps) {
 
             <FormField
               control={form.control}
-              name="asset_name"
+              name="target_name"
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>標的名稱</FormLabel>
@@ -628,7 +628,7 @@ export function ReportAssetForm({ onSubmitSuccess }: ReportAssetFormProps) {
                   {Object.entries(form.getValues()).map(([key, value]) => {
                     const label = {
                       managing_agency: '管理機關',
-                      asset_name: '標的名稱',
+                      target_name: '標的名稱',
                       district: '行政區',
                       section: '地段',
                       lot_number: '地號',
@@ -636,7 +636,7 @@ export function ReportAssetForm({ onSubmitSuccess }: ReportAssetFormProps) {
                       coordinates: '座標',
                       has_usage_license: '使用執照',
                       has_building_license: '建築執照',
-                      land_type: '��地種類',
+                      land_type: '土地種類',
                       zone_type: '使用分區',
                       land_use: '土地用途',
                       area: '面積（平方公尺）',

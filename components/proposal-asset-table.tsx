@@ -12,7 +12,7 @@ import { ChevronDown, ChevronUp } from "lucide-react"
 
 interface AssetProposal {
   id: string
-  asset_name: string
+  target_name: string
   agency_id: string
   district_id: string
   section: string
@@ -65,7 +65,7 @@ export function ProposalAssetTable({
             <TableRow>
               {[
                 ['提報編號', 'id'],
-                ['標的名稱', 'asset_name'],
+                ['標的名稱', 'target_name'],
                 ['管理機關', 'agency_id'],
                 ['行政區', 'district_id'],
                 ['地段', 'section'],
@@ -95,7 +95,7 @@ export function ProposalAssetTable({
                 onClick={() => onRowClick?.(proposal.id)}
               >
                 <TableCell>{proposal.id}</TableCell>
-                <TableCell>{proposal.asset_name}</TableCell>
+                <TableCell>{proposal.target_name}</TableCell>
                 <TableCell>
                   {proposal.agency_id && agencyMap[proposal.agency_id]
                     ? agencyMap[proposal.agency_id]
