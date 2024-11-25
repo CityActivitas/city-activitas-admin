@@ -11,9 +11,10 @@ export function ReporterDashboard() {
   const router = useRouter()
   const [isLoading, setIsLoading] = useState(true)
   const [proposalCount, setProposalCount] = useState(0)
+  const [requestCount, setRequestCount] = useState(0)
 
   useEffect(() => {
-    const fetchProposalCount = async () => {
+    const fetchCounts = async () => {
       if (typeof window !== 'undefined') {
         const token = localStorage.getItem('access_token')
         if (!token) {
@@ -22,25 +23,34 @@ export function ReporterDashboard() {
         }
 
         try {
-          const response = await fetch('http://localhost:8000/api/v1/proposals/asset-proposals', {
+          // 獲取提報資產數量
+          const proposalResponse = await fetch('http://localhost:8000/api/v1/proposals/asset-proposals', {
             headers: { 'Authorization': `Bearer ${token}` }
           })
 
-          if (!response.ok) {
-            throw new Error('Failed to fetch proposals data')
+          // 獲取資產需求數量
+          const requestResponse = await fetch('http://localhost:8000/api/v1/proposals/asset-requirements', {
+            headers: { 'Authorization': `Bearer ${token}` }
+          })
+
+          if (!proposalResponse.ok || !requestResponse.ok) {
+            throw new Error('Failed to fetch data')
           }
 
-          const data = await response.json()
-          setProposalCount(data.length)
+          const proposalData = await proposalResponse.json()
+          const requestData = await requestResponse.json()
+
+          setProposalCount(proposalData.length)
+          setRequestCount(requestData.length)
           setIsLoading(false)
         } catch (error) {
-          console.error('Error fetching proposals data:', error)
+          console.error('Error fetching data:', error)
           setIsLoading(false)
         }
       }
     }
     
-    fetchProposalCount()
+    fetchCounts()
   }, [router])
 
   if (isLoading) {
@@ -63,7 +73,7 @@ export function ReporterDashboard() {
             <AssetCard 
               title="申請資產需求" 
               icon={<FileText className="h-6 w-6" />} 
-              count={0}  // 如果有需要也可以加入申請資產的數量統計
+              count={requestCount}
               description="申請使用閒置資產"
               onClick={() => router.push('/request-asset')}
             />

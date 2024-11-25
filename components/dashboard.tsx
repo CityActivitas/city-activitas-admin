@@ -16,6 +16,7 @@ export function Dashboard() {
     activated: 23
   })
   const [proposalCount, setProposalCount] = useState(0)
+  const [requestCount, setRequestCount] = useState(0)
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -27,7 +28,13 @@ export function Dashboard() {
         }
 
         try {
-          const [idleResponse, casesResponse, activatedResponse, proposalsResponse] = await Promise.all([
+          const [
+            idleResponse, 
+            casesResponse, 
+            activatedResponse, 
+            proposalsResponse,
+            requestsResponse
+          ] = await Promise.all([
             fetch('http://localhost:8000/api/v1/idle', {
               headers: { 'Authorization': `Bearer ${token}` }
             }),
@@ -39,18 +46,30 @@ export function Dashboard() {
             }),
             fetch('http://localhost:8000/api/v1/proposals/asset-proposals', {
               headers: { 'Authorization': `Bearer ${token}` }
+            }),
+            fetch('http://localhost:8000/api/v1/proposals/asset-requirements', {
+              headers: { 'Authorization': `Bearer ${token}` }
             })
           ])
 
-          if (!idleResponse.ok || !casesResponse.ok || !activatedResponse.ok || !proposalsResponse.ok) {
+          if (!idleResponse.ok || !casesResponse.ok || 
+              !activatedResponse.ok || !proposalsResponse.ok || 
+              !requestsResponse.ok) {
             throw new Error('Failed to fetch data')
           }
 
-          const [idleData, casesData, activatedData, proposalsData] = await Promise.all([
+          const [
+            idleData, 
+            casesData, 
+            activatedData, 
+            proposalsData,
+            requestsData
+          ] = await Promise.all([
             idleResponse.json(),
             casesResponse.json(),
             activatedResponse.json(),
-            proposalsResponse.json()
+            proposalsResponse.json(),
+            requestsResponse.json()
           ])
           
           setAssetCounts({
@@ -59,6 +78,7 @@ export function Dashboard() {
             activated: activatedData.length
           })
           setProposalCount(proposalsData.length)
+          setRequestCount(requestsData.length)
           setIsLoading(false)
         } catch (error) {
           console.error('Error fetching data:', error)
@@ -114,7 +134,7 @@ export function Dashboard() {
             <AssetCard 
               title="申請資產需求" 
               icon={<FileText className="h-6 w-6" />} 
-              count={0}
+              count={requestCount}
               description="申請使用閒置資產"
               onClick={() => router.push('/request-asset')}
             />

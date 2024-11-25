@@ -62,7 +62,7 @@ export function RequestAssetTable({
   agencyMap = {},
   districtMap = {}
 }: RequestAssetTableProps) {
-  console.log(agencyMap)
+  // console.log(agencyMap)
   return (
     <div className="relative rounded-md border mt-2">
       <div className="overflow-y-scroll max-h-[70vh]">
