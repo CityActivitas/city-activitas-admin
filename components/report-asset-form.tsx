@@ -41,8 +41,10 @@ import { useToast } from "@/hooks/use-toast"
 
 const formSchema = z.object({
   managing_agency: z.string().min(1, { message: "請輸入管理機關" }),
+  agency_id: z.string().min(1, { message: "請選擇管理機關" }),
   target_name: z.string().min(1, { message: "請輸入標的名稱" }),
   district: z.string().min(1, { message: "請選擇行政區" }),
+  district_id: z.string().min(1, { message: "請選擇行政區" }),
   section: z.string().min(1, { message: "請輸入地段" }),
   lot_number: z.string().min(1, { message: "請輸入地號" }),
   address: z.string().min(1, { message: "請輸入地址" }),
@@ -77,8 +79,10 @@ export function ReportAssetForm({ onSubmitSuccess }: ReportAssetFormProps) {
     resolver: zodResolver(formSchema),
     defaultValues: {
       managing_agency: "",
+      agency_id: "",
       target_name: "",
       district: "",
+      district_id: "",
       section: "",
       lot_number: "",
       address: "",
@@ -182,7 +186,10 @@ export function ReportAssetForm({ onSubmitSuccess }: ReportAssetFormProps) {
                   <FormControl>
                     <AgenciesDrawerComponent
                       currentUnit={field.value}
-                      onUnitSelect={(unit) => field.onChange(unit)}
+                      onUnitSelect={(unit) => {
+                        form.setValue('managing_agency', unit.name);
+                        form.setValue('agency_id', unit.id.toString());
+                      }}
                     />
                   </FormControl>
                   <FormMessage />
@@ -213,7 +220,10 @@ export function ReportAssetForm({ onSubmitSuccess }: ReportAssetFormProps) {
                   <FormControl>
                     <DistrictSelectorDrawerComponent
                       currentDistrict={field.value}
-                      onDistrictSelect={(district) => field.onChange(district)}
+                      onDistrictSelect={(district) => {
+                        form.setValue('district', district.name);
+                        form.setValue('district_id', district.id.toString());
+                      }}
                     />
                   </FormControl>
                   <FormMessage />
@@ -675,6 +685,15 @@ export function ReportAssetForm({ onSubmitSuccess }: ReportAssetFormProps) {
               </DialogContent>
             </Dialog>
           </div>
+
+          <Input 
+            type="hidden"
+            {...form.register('agency_id')}
+          />
+          <Input 
+            type="hidden"
+            {...form.register('district_id')}
+          />
         </form>
       </Form>
     </div>
