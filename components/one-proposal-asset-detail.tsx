@@ -7,6 +7,8 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { ArrowLeft } from 'lucide-react'
 import { useToast } from "@/hooks/use-toast"
+import { AgenciesDrawerComponent } from "@/components/agencies-drawer"
+import { DistrictSelectorDrawerComponent } from "@/components/district-selector-drawer"
 
 interface ProposalAsset {
   id: string
@@ -37,6 +39,7 @@ interface ProposalAsset {
   updated_at: string
   reviewer_id: string | null
   reviewer_note: string | null
+  agency: string
 }
 
 interface OneProposalAssetDetailProps {
@@ -53,9 +56,17 @@ export function OneProposalAssetDetail({
   districtMap
 }: OneProposalAssetDetailProps) {
   const { toast } = useToast()
-  const [proposal, setProposal] = useState(initialProposal)
+  const [proposal, setProposal] = useState({
+    ...initialProposal,
+    agency: agencyMap[initialProposal.agency_id] || '',
+    district: districtMap[initialProposal.district_id] || ''
+  })
   const [isEditing, setIsEditing] = useState(false)
-  const [editedData, setEditedData] = useState(initialProposal)
+  const [editedData, setEditedData] = useState({
+    ...initialProposal,
+    agency: agencyMap[initialProposal.agency_id] || '',
+    district: districtMap[initialProposal.district_id] || ''
+  })
 
   // 從 localStorage 獲取用戶角色
   const userRole = JSON.parse(localStorage.getItem('user') || '{}')?.user_metadata?.system_role
@@ -78,7 +89,11 @@ export function OneProposalAssetDetail({
 
   const handleEdit = () => {
     setIsEditing(true)
-    setEditedData(proposal)
+    setEditedData({
+      ...proposal,
+      agency: agencyMap[proposal.agency_id] || '',
+      district: districtMap[proposal.district_id] || ''
+    })
   }
 
   const handleCancel = () => {
@@ -137,6 +152,17 @@ export function OneProposalAssetDetail({
     }).replace(/\//g, '-')
   }
 
+  // 在顯示時使用映射資料
+  const getDisplayValue = (key: string, value: string) => {
+    if (key === 'agency_id') {
+      return agencyMap[value] || value;
+    }
+    if (key === 'district_id') {
+      return districtMap[value] || value;
+    }
+    return value;
+  };
+
   return (
     <div className="container mx-auto px-4 space-y-4">
       <div className="flex items-center justify-between">
@@ -169,7 +195,7 @@ export function OneProposalAssetDetail({
             {[
               // 基本資訊
               'id',
-              'managing_agency',
+              'agency',
               'target_name',
               'district',
               'section',
@@ -231,7 +257,7 @@ export function OneProposalAssetDetail({
 
                 const label = {
                   id: '提案編號',
-                  managing_agency: '管理機關',
+                  agency: '管理機關',
                   target_name: '標的名稱',
                   district: '行政區',
                   section: '地段',
@@ -257,18 +283,65 @@ export function OneProposalAssetDetail({
                   reviewer_note: '審查備註',
                   created_at: '提報時間',
                   updated_at: '更新時間',
-                  reviewed_at: '審查時間'
+                  reviewed_at: '審查時間',
+                  agency_id: '管理機關ID'
                 }[key] || key
 
                 return (
                   <div key={key} className="space-y-2">
                     <Label>{label}</Label>
-                    <Input
-                      value={isEditing ? editedData[key] || '' : displayValue || ''}
-                      onChange={(e) => handleFieldChange(key, e.target.value)}
-                      readOnly={!isEditing || !canEdit(key)}
-                      className={(!isEditing || !canEdit(key)) ? 'bg-gray-50' : ''}
-                    />
+                    {key === 'agency' ? (
+                      <>
+                        {isEditing ? (
+                          <AgenciesDrawerComponent 
+                            currentUnit={editedData.agency || ''}
+                            onUnitSelect={(unit) => {
+                              handleFieldChange('agency', unit.name);
+                              handleFieldChange('agency_id', unit.id.toString());
+                            }}
+                          />
+                        ) : (
+                          <Input 
+                            value={getDisplayValue('agency_id', proposal.agency_id) || ''}
+                            readOnly
+                            className="bg-gray-50"
+                          />
+                        )}
+                        <Input 
+                          type="hidden"
+                          value={editedData.agency_id || ''}
+                        />
+                      </>
+                    ) : key === 'district' ? (
+                      <>
+                        {isEditing ? (
+                          <DistrictSelectorDrawerComponent 
+                            currentDistrict={editedData.district || ''}
+                            onDistrictSelect={(district) => {
+                              handleFieldChange('district', district.name);
+                              handleFieldChange('district_id', district.id.toString());
+                            }}
+                          />
+                        ) : (
+                          <Input 
+                            value={getDisplayValue('district_id', proposal.district_id) || ''}
+                            readOnly
+                            className="bg-gray-50"
+                          />
+                        )}
+                        <Input 
+                          type="hidden"
+                          value={editedData.district_id || ''}
+                        />
+                      </>
+                    ) : (
+                      <Input
+                        value={isEditing ? editedData[key] || '' : displayValue || ''}
+                        onChange={(e) => handleFieldChange(key, e.target.value)}
+                        readOnly={!isEditing || !canEdit(key)}
+                        className={(!isEditing || !canEdit(key)) ? 'bg-gray-50' : ''}
+                      />
+                    )}
                   </div>
                 )
               })}

@@ -135,7 +135,16 @@ export function ReportAsset() {
             proposals={sortedProposals}
             sortConfig={sortConfig}
             onSort={handleSort}
-            onRowClick={handleRowClick}
+            onRowClick={(proposalId) => {
+              const proposal = proposals.find(p => p.id === proposalId);
+              if (proposal) {
+                setSelectedProposal({
+                  ...proposal,
+                  agency: agencyMap[proposal.agency_id] || '',
+                  district: districtMap[proposal.district_id] || ''
+                });
+              }
+            }}
             agencyMap={agencyMap}
             districtMap={districtMap}
           />
