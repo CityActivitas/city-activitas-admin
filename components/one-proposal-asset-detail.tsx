@@ -9,6 +9,7 @@ import { ArrowLeft } from 'lucide-react'
 import { useToast } from "@/hooks/use-toast"
 import { AgenciesDrawerComponent } from "@/components/agencies-drawer"
 import { DistrictSelectorDrawerComponent } from "@/components/district-selector-drawer"
+import { LocationDrawerComponent } from "@/components/location-drawer"
 
 interface ProposalAsset {
   id: string
@@ -67,6 +68,7 @@ export function OneProposalAssetDetail({
     agency: agencyMap[initialProposal.agency_id] || '',
     district: districtMap[initialProposal.district_id] || ''
   })
+  const [locationDrawerOpen, setLocationDrawerOpen] = useState(false)
 
   // 從 localStorage 獲取用戶角色
   const userRole = JSON.parse(localStorage.getItem('user') || '{}')?.user_metadata?.system_role
@@ -162,6 +164,20 @@ export function OneProposalAssetDetail({
     }
     return value;
   };
+
+  // 處理開啟 LocationDrawer 時的搜尋
+  const handleLocationDrawerOpen = () => {
+    if (isEditing) {
+      setLocationDrawerOpen(true)
+      // 如果有地址或座標，設置為搜尋值
+      if (editedData.address) {
+        // 將地址設為搜尋值
+        setInitialSearchValue(editedData.address)
+      }
+    }
+  }
+
+  const [initialSearchValue, setInitialSearchValue] = useState("")
 
   return (
     <div className="container mx-auto px-4 space-y-4">
@@ -334,6 +350,30 @@ export function OneProposalAssetDetail({
                           value={editedData.district_id || ''}
                         />
                       </>
+                    ) : key === 'address' ? (
+                      <div className="space-y-2">
+                        <Label>地址</Label>
+                        <div className="flex gap-2">
+                          <Input 
+                            value={isEditing ? editedData.address || '' : proposal.address || ''}
+                            onChange={(e) => handleFieldChange('address', e.target.value)}
+                            onClick={handleLocationDrawerOpen}
+                            readOnly={!isEditing || !canEdit('address')}
+                            className={(!isEditing || !canEdit('address')) ? 'bg-gray-50' : ''}
+                          />
+                        </div>
+                      </div>
+                    ) : key === 'coordinates' ? (
+                      <div className="space-y-2">
+                        <Label>定位座標</Label>
+                        <Input 
+                          value={isEditing ? editedData.coordinates || '' : proposal.coordinates || ''}
+                          onChange={(e) => handleFieldChange('coordinates', e.target.value)}
+                          onClick={handleLocationDrawerOpen}
+                          readOnly={!isEditing || !canEdit('coordinates')}
+                          className={(!isEditing || !canEdit('coordinates')) ? 'bg-gray-50' : ''}
+                        />
+                      </div>
                     ) : (
                       <Input
                         value={isEditing ? editedData[key] || '' : displayValue || ''}
@@ -348,6 +388,17 @@ export function OneProposalAssetDetail({
           </div>
         </CardContent>
       </Card>
+      <LocationDrawerComponent 
+        open={locationDrawerOpen} 
+        onOpenChange={setLocationDrawerOpen}
+        onConfirm={(address, coordinates) => {
+          handleFieldChange('address', address);
+          handleFieldChange('coordinates', coordinates);
+        }}
+        initialAddress={editedData.address}
+        initialCoordinates={editedData.coordinates}
+        initialSearchValue={initialSearchValue}
+      />
     </div>
   )
 } 
