@@ -6,6 +6,7 @@ import { RequestAssetForm } from "./request-asset-form"
 import { useState, useEffect } from "react"
 import { FileText, X } from "lucide-react"
 import { RequestAssetTable } from "./request-asset-table"
+import { OneRequestAssetDetail } from "./one-request-asset-detail"
 
 interface AssetRequest {
   id: string
