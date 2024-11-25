@@ -25,11 +25,13 @@ import { AgenciesDrawerComponent } from "@/components/agencies-drawer"
 import { DistrictSelectorDrawerComponent } from "@/components/district-selector-drawer"
 
 const formSchema = z.object({
+  managing_agency: z.string().min(1, { message: "請輸入需求機關" }),
   agency_id: z.string().min(1, { message: "請選擇需求機關" }),
   purpose: z.string().min(1, { message: "請輸入需求用途" }),
   asset_type: z.enum(["土地", "建物"]),
   preferred_floor: z.string().optional(),
   area: z.number().min(0, { message: "面積必須大於0" }),
+  district: z.string().min(1, { message: "請選擇希望地點" }),
   district_id: z.string().min(1, { message: "請選擇希望地點" }),
   urgency_note: z.string().min(1, { message: "請說明必要性與急迫性" }),
   funding_source: z.string().min(1, { message: "請說明經費來源" }),
@@ -39,11 +41,13 @@ export function RequestAssetForm() {
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
+      managing_agency: "",
       agency_id: "",
       purpose: "",
       asset_type: "建物",
       preferred_floor: "",
       area: 0,
+      district: "",
       district_id: "",
       urgency_note: "",
       funding_source: "擬爭取納入市預算編列",
@@ -66,14 +70,17 @@ export function RequestAssetForm() {
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
           <FormField
             control={form.control}
-            name="agency_id"
+            name="managing_agency"
             render={({ field }) => (
               <FormItem>
                 <FormLabel>需求機關</FormLabel>
                 <FormControl>
                   <AgenciesDrawerComponent
                     currentUnit={field.value}
-                    onUnitSelect={(unit) => field.onChange(unit)}
+                    onUnitSelect={(unit) => {
+                      form.setValue('managing_agency', unit.name);
+                      form.setValue('agency_id', unit.id.toString());
+                    }}
                   />
                 </FormControl>
                 <FormMessage />
@@ -153,14 +160,17 @@ export function RequestAssetForm() {
 
           <FormField
             control={form.control}
-            name="district_id"
+            name="district"
             render={({ field }) => (
               <FormItem>
                 <FormLabel>希望地點</FormLabel>
                 <FormControl>
                   <DistrictSelectorDrawerComponent
                     currentDistrict={field.value}
-                    onDistrictSelect={(district) => field.onChange(district)}
+                    onDistrictSelect={(district) => {
+                      form.setValue('district', district.name);
+                      form.setValue('district_id', district.id.toString());
+                    }}
                   />
                 </FormControl>
                 <FormMessage />
@@ -194,6 +204,15 @@ export function RequestAssetForm() {
                 <FormMessage />
               </FormItem>
             )}
+          />
+
+          <Input 
+            type="hidden"
+            {...form.register('agency_id')}
+          />
+          <Input 
+            type="hidden"
+            {...form.register('district_id')}
           />
 
           <div className="flex justify-end gap-4">
