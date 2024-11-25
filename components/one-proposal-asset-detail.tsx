@@ -11,6 +11,13 @@ import { AgenciesDrawerComponent } from "@/components/agencies-drawer"
 import { DistrictSelectorDrawerComponent } from "@/components/district-selector-drawer"
 import { LocationDrawerComponent } from "@/components/location-drawer"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter, DialogClose, DialogTrigger } from "@/components/ui/dialog"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
 
 interface ProposalAsset {
   id: string
@@ -159,7 +166,9 @@ export function OneProposalAssetDetail({
       hour: '2-digit',
       minute: '2-digit',
       hour12: false
-    }).replace(/\//g, '-')
+    })
+      .replace(/\//g, '-')  // 將斜線替換為橫線
+      .replace(/,/g, '')    // 移除逗號
   }
 
   // 在顯示時使用映射資料
@@ -449,6 +458,32 @@ export function OneProposalAssetDetail({
                           readOnly={!isEditing || !canEdit('coordinates')}
                           className={(!isEditing || !canEdit('coordinates')) ? 'bg-gray-50' : ''}
                         />
+                      </div>
+                    ) : key === 'proposal_status' ? (
+                      <div key={key} className="space-y-2">
+                        <Label>{label}</Label>
+                        {isEditing && canEdit(key) ? (
+                          <Select
+                            value={editedData.proposal_status}
+                            onValueChange={(value) => handleFieldChange('proposal_status', value)}
+                          >
+                            <SelectTrigger>
+                              <SelectValue placeholder="選擇提案狀態" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="提案中">提案中</SelectItem>
+                              <SelectItem value="需要修改">需要修改</SelectItem>
+                              <SelectItem value="不執行">不執行</SelectItem>
+                              <SelectItem value="已核准">已核准</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        ) : (
+                          <Input
+                            value={proposal.proposal_status || ''}
+                            readOnly
+                            className="bg-gray-50"
+                          />
+                        )}
                       </div>
                     ) : (
                       <Input
