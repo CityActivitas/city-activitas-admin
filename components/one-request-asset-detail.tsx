@@ -7,6 +7,8 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { ArrowLeft } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
+import { AgenciesDrawerComponent } from "@/components/agencies-drawer"
+import { DistrictSelectorDrawerComponent } from "@/components/district-selector-drawer"
 import {
   Dialog,
   DialogClose,
@@ -40,6 +42,10 @@ interface AssetRequest {
   requirement_status: string
   created_at: string
   reporter_email: string
+  updated_at: string
+  reviewer_note: string | null
+  reviewed_at: string | null
+  reviewer_id: string | null
 }
 
 interface OneRequestAssetDetailProps {
@@ -73,12 +79,20 @@ export function OneRequestAssetDetail({
 
   // 判斷欄位是否可以編輯
   const canEdit = (fieldName: string) => {
-    const nonEditableFields = ['id', 'reporter_email', 'created_at']
+    const nonEditableFields = [
+      'id', 
+      'reporter_email', 
+      'created_at', 
+      'updated_at', 
+      'reviewed_at',
+      'reviewer_id'
+    ]
     if (nonEditableFields.includes(fieldName)) return false
 
     if (userRole === 'admin') return true
     
     if (userRole === 'reporter') {
+      if (fieldName === 'reviewer_note') return false
       return ['提案中', '需要修改'].includes(request.requirement_status)
     }
 
@@ -157,6 +171,17 @@ export function OneRequestAssetDetail({
       .replace(/,/g, '')
   }
 
+  // 新增 getDisplayValue 函數
+  const getDisplayValue = (key: string, value: string) => {
+    if (key === 'agency_id') {
+      return agencyMap[value] || value;
+    }
+    if (key === 'district_id') {
+      return districtMap[value] || value;
+    }
+    return value;
+  };
+
   return (
     <div className="container mx-auto px-4 space-y-4">
       <div className="flex items-center justify-between">
@@ -188,12 +213,23 @@ export function OneRequestAssetDetail({
                       </DialogDescription>
                     </DialogHeader>
                     <div className="space-y-2 text-sm">
-                      {Object.entries(editedData).map(([key, value]) => (
-                        <div key={key} className="grid grid-cols-2 gap-2">
-                          <span className="font-medium">{key}</span>
-                          <span>{value}</span>
-                        </div>
-                      ))}
+                      {Object.entries(editedData).map(([key, value]) => {
+                        if ([
+                          'created_at', 
+                          'updated_at', 
+                          'reviewed_at', 
+                          'reporter_email', 
+                          'reviewer_id'
+                        ].includes(key)) {
+                          return null;
+                        }
+                        return (
+                          <div key={key} className="grid grid-cols-2 gap-2">
+                            <span className="font-medium">{key}</span>
+                            <span>{value}</span>
+                          </div>
+                        )
+                      })}
                     </div>
                     <DialogFooter>
                       <DialogClose asChild>
@@ -224,69 +260,157 @@ export function OneRequestAssetDetail({
               'funding_source',
               'requirement_status',
               'reporter_email',
-              'created_at'
-            ].map(key => {
-              const value = request[key]
-              let displayValue = value
+              'reviewer_note',
+              'created_at',
+              'updated_at',
+              'reviewed_at'
+            ]
+              .filter(key => {
+                if (userRole === 'admin') {
+                  return key !== 'reviewer_id'
+                } else if (userRole === 'reporter') {
+                  return !['reviewer_id', 'reviewer_note'].includes(key)
+                }
+                return true
+              })
+              .map(key => {
+                const value = request[key]
+                let displayValue = value
 
-              if (key === 'created_at') {
-                displayValue = formatDateTime(value)
-              }
+                if (['created_at', 'updated_at', 'reviewed_at'].includes(key)) {
+                  displayValue = formatDateTime(value)
+                }
 
-              const label = {
-                id: '需求編號',
-                managing_agency: '需求機關',
-                purpose: '需求用途',
-                asset_type: '資產類型',
-                preferred_floor: '希望樓層',
-                area: '需求面積（平方公尺）',
-                district: '希望地點',
-                urgency_note: '急迫性說明',
-                funding_source: '經費來源',
-                requirement_status: '需求狀態',
-                reporter_email: '申請人信箱',
-                created_at: '申請時間'
-              }[key] || key
+                const label = {
+                  id: '需求編號',
+                  managing_agency: '需求機關',
+                  purpose: '需求用途',
+                  asset_type: '資產類型',
+                  preferred_floor: '希望樓層',
+                  area: '需求面積（平方公尺）',
+                  district: '希望地點',
+                  urgency_note: '急迫性說明',
+                  funding_source: '經費來源',
+                  requirement_status: '需求狀態',
+                  reporter_email: '申請人信箱',
+                  reviewer_note: '審查備註',
+                  updated_at: '更新時間',
+                  reviewed_at: '審查時間',
+                  created_at: '申請時間'
+                }[key] || key
 
-              return (
-                <div key={key} className="space-y-2">
-                  <Label>{label}</Label>
-                  {key === 'requirement_status' ? (
-                    <div className="space-y-2">
-                      {isEditing && canEdit(key) ? (
-                        <Select
-                          value={editedData.requirement_status}
-                          onValueChange={(value) => handleFieldChange('requirement_status', value)}
-                        >
-                          <SelectTrigger>
-                            <SelectValue placeholder="選擇需求狀態" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="提案中">提案中</SelectItem>
-                            <SelectItem value="需要修改">需要修改</SelectItem>
-                            <SelectItem value="不執行">不執行</SelectItem>
-                            <SelectItem value="已核准">已核准</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      ) : (
-                        <Input
-                          value={request.requirement_status || ''}
-                          readOnly
-                          className="bg-gray-50"
+                return (
+                  <div key={key} className="space-y-2">
+                    <Label>{label}</Label>
+                    {key === 'managing_agency' ? (
+                      <>
+                        {isEditing ? (
+                          <AgenciesDrawerComponent 
+                            currentUnit={editedData.managing_agency || ''}
+                            onUnitSelect={(unit) => {
+                              handleFieldChange('managing_agency', unit.name);
+                              handleFieldChange('agency_id', unit.id.toString());
+                            }}
+                          />
+                        ) : (
+                          <Input 
+                            value={getDisplayValue('agency_id', request.agency_id) || ''}
+                            readOnly
+                            className="bg-gray-50"
+                          />
+                        )}
+                        <Input 
+                          type="hidden"
+                          value={editedData.agency_id || ''}
                         />
-                      )}
-                    </div>
-                  ) : (
-                    <Input
-                      value={isEditing ? editedData[key] || '' : displayValue || ''}
-                      onChange={(e) => handleFieldChange(key, e.target.value)}
-                      readOnly={!isEditing || !canEdit(key)}
-                      className={(!isEditing || !canEdit(key)) ? 'bg-gray-50' : ''}
-                    />
-                  )}
-                </div>
-              )
-            })}
+                      </>
+                    ) : key === 'district' ? (
+                      <>
+                        {isEditing ? (
+                          <DistrictSelectorDrawerComponent 
+                            currentDistrict={editedData.district || ''}
+                            onDistrictSelect={(district) => {
+                              handleFieldChange('district', district.name);
+                              handleFieldChange('district_id', district.id.toString());
+                            }}
+                          />
+                        ) : (
+                          <Input 
+                            value={getDisplayValue('district_id', request.district_id) || ''}
+                            readOnly
+                            className="bg-gray-50"
+                          />
+                        )}
+                        <Input 
+                          type="hidden"
+                          value={editedData.district_id || ''}
+                        />
+                      </>
+                    ) : key === 'requirement_status' ? (
+                      <div className="space-y-2">
+                        {isEditing && canEdit(key) ? (
+                          <Select
+                            value={editedData.requirement_status}
+                            onValueChange={(value) => handleFieldChange('requirement_status', value)}
+                          >
+                            <SelectTrigger>
+                              <SelectValue placeholder="選擇需求狀態" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="提案中">提案中</SelectItem>
+                              <SelectItem value="需要修改">需要修改</SelectItem>
+                              <SelectItem value="不執行">不執行</SelectItem>
+                              <SelectItem value="已核准">已核准</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        ) : (
+                          <Input
+                            value={request.requirement_status || ''}
+                            readOnly
+                            className="bg-gray-50"
+                          />
+                        )}
+                      </div>
+                    ) : key === 'asset_type' ? (
+                      <div className="space-y-2">
+                        {isEditing && canEdit(key) ? (
+                          <Select
+                            value={editedData.asset_type}
+                            onValueChange={(value) => handleFieldChange('asset_type', value)}
+                          >
+                            <SelectTrigger>
+                              <SelectValue placeholder="選擇資產類型" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="土地">土地</SelectItem>
+                              <SelectItem value="建物">建物</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        ) : (
+                          <Input
+                            value={request.asset_type || ''}
+                            readOnly
+                            className="bg-gray-50"
+                          />
+                        )}
+                      </div>
+                    ) : key === 'created_at' ? (
+                      <Input
+                        value={displayValue}
+                        readOnly
+                        className="bg-gray-50"
+                      />
+                    ) : (
+                      <Input
+                        value={isEditing ? editedData[key] || '' : displayValue || ''}
+                        onChange={(e) => handleFieldChange(key, e.target.value)}
+                        readOnly={!isEditing || !canEdit(key)}
+                        className={(!isEditing || !canEdit(key)) ? 'bg-gray-50' : ''}
+                      />
+                    )}
+                  </div>
+                )
+              })}
           </div>
         </CardContent>
       </Card>
