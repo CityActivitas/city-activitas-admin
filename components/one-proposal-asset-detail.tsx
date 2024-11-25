@@ -10,6 +10,7 @@ import { useToast } from "@/hooks/use-toast"
 import { AgenciesDrawerComponent } from "@/components/agencies-drawer"
 import { DistrictSelectorDrawerComponent } from "@/components/district-selector-drawer"
 import { LocationDrawerComponent } from "@/components/location-drawer"
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter, DialogClose, DialogTrigger } from "@/components/ui/dialog"
 
 interface ProposalAsset {
   id: string
@@ -106,7 +107,7 @@ export function OneProposalAssetDetail({
   const handleSave = async () => {
     try {
       const token = localStorage.getItem('access_token')
-      const response = await fetch(`http://localhost:8000/api/v1/proposals/${proposal.id}`, {
+      const response = await fetch(`http://localhost:8000/api/v1/proposals/asset-proposals/${proposal.id}`, {
         method: 'PUT',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -123,11 +124,18 @@ export function OneProposalAssetDetail({
       
       toast({
         title: "更新成功",
+        description: "資料已成功更新",
         variant: "default",
       })
+
+      // 回到列表頁面並重新載入資料
+      onBack()
+      
     } catch (error) {
+      console.error('更新錯誤:', error)
       toast({
         title: "更新失敗",
+        description: "更新資料時發生錯誤，請稍後再試",
         variant: "destructive",
       })
     }
@@ -198,7 +206,75 @@ export function OneProposalAssetDetail({
             ) : (
               <>
                 <Button variant="outline" onClick={handleCancel}>取消</Button>
-                <Button onClick={handleSave}>儲存</Button>
+                <Dialog>
+                  <DialogTrigger asChild>
+                    <Button>儲存</Button>
+                  </DialogTrigger>
+                  <DialogContent className="max-w-2xl">
+                    <DialogHeader>
+                      <DialogTitle>確認修改</DialogTitle>
+                      <DialogDescription>
+                        修改後的資料如下：
+                      </DialogDescription>
+                    </DialogHeader>
+                    <div className="space-y-2 text-sm">
+                      {Object.entries(editedData).map(([key, value]) => {
+                        const isModified = JSON.stringify(proposal[key as keyof ProposalAsset]) !== JSON.stringify(value);
+                        const label = {
+                          id: '提案編號',
+                          target_name: '標的名稱',
+                          agency: '管理機關',
+                          agency_id: '管理機關ID',
+                          district: '行政區',
+                          district_id: '行政區ID',
+                          section: '地段',
+                          address: '地址',
+                          coordinates: '座標',
+                          has_usage_license: '使用執照',
+                          has_building_license: '建築執照',
+                          land_type: '土地種類',
+                          zone_type: '使用分區',
+                          land_use: '土地用途',
+                          area: '面積（平方公尺）',
+                          floor_area: '樓地板面積（平方公尺）',
+                          usage_description: '使用情形說明',
+                          usage_status: '使用狀態',
+                          activation_status: '活化辦理情形',
+                          estimated_activation_date: '預估活化時程',
+                          is_requesting_delisting: '是否申請解除列管',
+                          delisting_reason: '解除列管原因',
+                          note: '備註',
+                          proposal_status: '提案狀態',
+                          reviewer_note: '審查備註'
+                        }[key] || key;
+
+                        // 跳過不需要顯示的欄位
+                        if (['created_at', 'updated_at', 'reviewed_at', 'reporter_email', 'reviewer_id'].includes(key)) {
+                          return null;
+                        }
+
+                        return (
+                          <div key={key} className="flex">
+                            <span className="w-32 flex-shrink-0">{label}:</span>
+                            <span className={`${isModified ? "font-bold text-red-500" : ""}`}>
+                              {value || '無'}
+                            </span>
+                          </div>
+                        );
+                      })}
+                    </div>
+                    <DialogFooter>
+                      <DialogClose asChild>
+                        <Button variant="outline">
+                          取消
+                        </Button>
+                      </DialogClose>
+                      <Button onClick={handleSave}>
+                        確認修改
+                      </Button>
+                    </DialogFooter>
+                  </DialogContent>
+                </Dialog>
               </>
             )}
           </div>

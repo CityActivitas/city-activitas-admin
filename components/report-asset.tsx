@@ -5,7 +5,8 @@ import { Building, X } from "lucide-react"
 import { Header } from "@/components/header"
 import { Button } from "@/components/ui/button"
 import { ReportAssetForm } from "./report-asset-form"
-import { ProposalAssetTable } from "./proposal-asset-table"
+import { ProposalAssetTable, SortConfig } from "./proposal-asset-table"
+import { OneProposalAssetDetail } from "./one-proposal-asset-detail"
 
 interface AssetProposal {
   id: string
@@ -17,6 +18,49 @@ interface AssetProposal {
   reporter_email: string
   status: string
   created_at: string
+  target_name: string
+  agency_id: string
+  district_id: string
+  proposal_status: string
+  coordinates: string
+  has_usage_license: string
+  has_building_license: string
+  land_type: string
+  land_number: string
+  land_area: number
+  floor_area: number
+  building_age: number
+  floor_count: number
+  management_type: string
+  current_use: string
+  target_use: string
+  contact_name: string
+  contact_phone: string
+  contact_email: string
+  notes: string
+  image_urls: string[]
+  attachments: string[]
+  zone_type: string
+  land_use: string
+  area: string
+  usage_description: string
+  usage_status: string
+  activation_status: string
+  estimated_activation_date: string
+  is_requesting_delisting: boolean
+  delisting_reason: string
+  delisting_notes: string
+  delisting_attachments: string[]
+  review_status: string
+  review_notes: string
+  review_attachments: string[]
+  reviewed_at: string
+  note: string
+  lot_number: string
+  updated_at: string
+  reviewer_id: string
+  reviewer_note: string
+  agency: string
 }
 
 export function ReportAsset() {
@@ -24,10 +68,11 @@ export function ReportAsset() {
   const [proposals, setProposals] = useState<AssetProposal[]>([])
   const [agencyMap, setAgencyMap] = useState<Record<string, string>>({})
   const [districtMap, setDistrictMap] = useState<Record<string, string>>({})
-  const [sortConfig, setSortConfig] = useState<{
-    key: keyof AssetProposal
-    direction: 'asc' | 'desc'
-  }>({ key: 'created_at', direction: 'desc' })
+  const [sortConfig, setSortConfig] = useState<SortConfig>({ 
+    key: 'created_at', 
+    direction: 'desc' 
+  })
+  const [selectedProposal, setSelectedProposal] = useState<AssetProposal | null>(null)
 
   useEffect(() => {
     fetchProposals()
@@ -41,12 +86,11 @@ export function ReportAsset() {
           'Authorization': `Bearer ${localStorage.getItem('access_token')}`
         }
       })
-      if (!response.ok) throw new Error('Failed to fetch proposals')
+      if (!response.ok) throw new Error('獲取提案列表失敗')
       const data = await response.json()
-      console.log('Proposals:', data)
       setProposals(data)
     } catch (error) {
-      console.error('Error fetching proposals:', error)
+      console.error('獲取提案列表錯誤:', error)
     }
   }
 
@@ -154,6 +198,21 @@ export function ReportAsset() {
               尚無提報資產
             </div>
           </div>
+        )}
+
+        {selectedProposal && (
+          <OneProposalAssetDetail 
+            proposal={{
+              ...selectedProposal,
+              floor_area: selectedProposal.floor_area.toString()
+            }}
+            onBack={() => {
+              setSelectedProposal(null)  // 清除選中的提案
+              fetchProposals()           // 重新獲取列表
+            }}
+            agencyMap={agencyMap}
+            districtMap={districtMap}
+          />
         )}
       </main>
     </div>
