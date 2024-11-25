@@ -70,9 +70,9 @@ export function RequestAssetForm() {
     try {
       const userStr = localStorage.getItem('user')
       const user = userStr ? JSON.parse(userStr) : null
-      const requesterEmail = user?.email
+      const reporterEmail = user?.email
 
-      if (!requesterEmail) {
+      if (!reporterEmail) {
         toast({
           variant: "destructive",
           title: "錯誤",
@@ -83,13 +83,13 @@ export function RequestAssetForm() {
 
       const submitData = {
         ...values,
-        requester_email: requesterEmail,
+        reporter_email: reporterEmail,
         area: Number(values.area) || 0
       }
 
       console.log('Submitting data:', submitData)
 
-      const response = await fetch('http://localhost:8000/api/v1/requests/asset-requests', {
+      const response = await fetch('http://localhost:8000/api/v1/proposals/asset-requirements', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
