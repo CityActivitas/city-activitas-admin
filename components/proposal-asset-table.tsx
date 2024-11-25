@@ -59,19 +59,6 @@ export function ProposalAssetTable({
   agencyMap,
   districtMap 
 }: ProposalAssetTableProps) {
-  const [selectedProposal, setSelectedProposal] = useState<AssetProposal | null>(null)
-
-  if (selectedProposal) {
-    return (
-      <OneProposalAssetDetail 
-        proposal={selectedProposal}
-        onBack={() => setSelectedProposal(null)}
-        agencyMap={agencyMap}
-        districtMap={districtMap}
-      />
-    )
-  }
-
   return (
     <div className="relative rounded-md border mt-2">
       <div className="overflow-y-scroll max-h-[70vh]">
@@ -107,7 +94,7 @@ export function ProposalAssetTable({
               <TableRow 
                 key={proposal.id}
                 className="cursor-pointer hover:bg-gray-100"
-                onClick={() => setSelectedProposal(proposal)}
+                onClick={() => onRowClick && onRowClick(proposal.id)}
               >
                 <TableCell>{proposal.id}</TableCell>
                 <TableCell>{proposal.target_name}</TableCell>

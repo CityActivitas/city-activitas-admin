@@ -175,8 +175,9 @@ export function ReportAsset() {
             }} 
           />
         ) : proposals.length > 0 ? (
-          <ProposalAssetTable 
-            proposals={sortedProposals}
+          !selectedProposal && (
+            <ProposalAssetTable 
+              proposals={sortedProposals}
             sortConfig={sortConfig}
             onSort={handleSort}
             onRowClick={(proposalId) => {
@@ -188,10 +189,11 @@ export function ReportAsset() {
                   district: districtMap[proposal.district_id] || ''
                 });
               }
-            }}
-            agencyMap={agencyMap}
-            districtMap={districtMap}
-          />
+              }}
+              agencyMap={agencyMap}
+              districtMap={districtMap}
+            />
+          )
         ) : (
           <div className="bg-white rounded-lg shadow p-6">
             <div className="text-center text-gray-500">
@@ -201,17 +203,17 @@ export function ReportAsset() {
         )}
 
         {selectedProposal && (
-          <OneProposalAssetDetail 
-            proposal={{
-              ...selectedProposal,
-              floor_area: selectedProposal.floor_area.toString()
-            }}
-            onBack={() => {
-              setSelectedProposal(null)  // 清除選中的提案
-              fetchProposals()           // 重新獲取列表
-            }}
-            agencyMap={agencyMap}
-            districtMap={districtMap}
+              <OneProposalAssetDetail 
+                proposal={{
+                  ...selectedProposal,
+                  floor_area: selectedProposal.floor_area.toString()
+                }}
+                onBack={() => {
+                  setSelectedProposal(null);
+                  fetchProposals();
+                }}
+                agencyMap={agencyMap}
+                districtMap={districtMap}
           />
         )}
       </main>
