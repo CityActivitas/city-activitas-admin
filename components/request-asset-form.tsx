@@ -23,6 +23,17 @@ import { useForm } from "react-hook-form"
 import * as z from "zod"
 import { AgenciesDrawerComponent } from "@/components/agencies-drawer"
 import { DistrictSelectorDrawerComponent } from "@/components/district-selector-drawer"
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+  DialogFooter,
+  DialogDescription,
+  DialogClose
+} from "@/components/ui/dialog"
+import { useToast } from "@/hooks/use-toast"
 
 const formSchema = z.object({
   managing_agency: z.string().min(1, { message: "請輸入需求機關" }),
@@ -38,6 +49,7 @@ const formSchema = z.object({
 })
 
 export function RequestAssetForm() {
+  const { toast } = useToast()
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -54,9 +66,63 @@ export function RequestAssetForm() {
     },
   })
 
-  function onSubmit(values: z.infer<typeof formSchema>) {
-    console.log(values)
-    // TODO: 實作提交邏輯
+  async function onSubmit(values: z.infer<typeof formSchema>) {
+    try {
+      const userStr = localStorage.getItem('user')
+      const user = userStr ? JSON.parse(userStr) : null
+      const requesterEmail = user?.email
+
+      if (!requesterEmail) {
+        toast({
+          variant: "destructive",
+          title: "錯誤",
+          description: "無法取得使用者資訊",
+        })
+        return
+      }
+
+      const submitData = {
+        ...values,
+        requester_email: requesterEmail,
+        area: Number(values.area) || 0
+      }
+
+      console.log('Submitting data:', submitData)
+
+      const response = await fetch('http://localhost:8000/api/v1/requests/asset-requests', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('access_token')}`
+        },
+        body: JSON.stringify(submitData)
+      })
+
+      if (!response.ok) {
+        const errorData = await response.json()
+        throw new Error(errorData.detail || '提交失敗')
+      }
+
+      toast({
+        title: "提交成功",
+        description: "資產需求已成功送出",
+      })
+
+      form.reset()
+      
+      const closeButton = document.querySelector('[data-dialog-close]') as HTMLButtonElement
+      if (closeButton) {
+        closeButton.click()
+      }
+      
+    } catch (error) {
+      console.error('提交錯誤:', error)
+      toast({
+        variant: "destructive",
+        title: "提交失敗",
+        description: "提交資料時發生錯誤，請稍後再試",
+      })
+    }
   }
 
   return (
@@ -216,7 +282,57 @@ export function RequestAssetForm() {
           />
 
           <div className="flex justify-end gap-4">
-            <Button type="submit">提交需求</Button>
+            <Dialog>
+              <DialogTrigger asChild>
+                <Button type="button">提交需求</Button>
+              </DialogTrigger>
+              <DialogContent className="max-w-2xl">
+                <DialogHeader>
+                  <DialogTitle>確認提交</DialogTitle>
+                  <DialogDescription>
+                    提交的資料如下：
+                  </DialogDescription>
+                </DialogHeader>
+                <div className="space-y-2 text-sm max-h-[60vh] overflow-y-auto">
+                  {Object.entries(form.getValues()).map(([key, value]) => {
+                    const label = {
+                      managing_agency: '需求機關',
+                      agency_id: '機關代碼',
+                      purpose: '需求用途',
+                      asset_type: '資產種類',
+                      preferred_floor: '希望樓層',
+                      area: '需求面積（平方公尺）',
+                      district: '希望地點',
+                      district_id: '地點代碼',
+                      urgency_note: '必要性與急迫性說明',
+                      funding_source: '經費來源'
+                    }[key] || key;
+
+                    // 跳過不需要顯示的欄位
+                    if (['agency_id', 'district_id'].includes(key)) {
+                      return null;
+                    }
+
+                    return (
+                      <div key={key} className="flex">
+                        <span className="w-32 flex-shrink-0">{label}:</span>
+                        <span>{value || '無'}</span>
+                      </div>
+                    );
+                  })}
+                </div>
+                <DialogFooter>
+                  <DialogClose asChild data-dialog-close>
+                    <Button variant="outline">
+                      取消
+                    </Button>
+                  </DialogClose>
+                  <Button onClick={form.handleSubmit(onSubmit)}>
+                    確認提交
+                  </Button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
           </div>
         </form>
       </Form>
