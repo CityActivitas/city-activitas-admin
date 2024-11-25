@@ -63,6 +63,8 @@ interface AssetData {
   note: string;
   landNumber: string;
   landType: string;
+  agency_id: string | number;
+  district_id: string;
 }
 
 // 建物土地關聯細項
@@ -109,7 +111,9 @@ export function OneIdleAssetDetail({ assetId, onBack, assetData, onUpdateSuccess
     vacancyRate: '',
     note: '',
     landNumber: '',
-    landType: ''
+    landType: '',
+    agency_id: '',
+    district_id: ''
   })
 
   const [landRelationData, setLandRelationData] = useState<LandRelationData[]>([])
@@ -607,14 +611,28 @@ export function OneIdleAssetDetail({ assetId, onBack, assetData, onUpdateSuccess
                     <Label>管理機關</Label>
                     <AgenciesDrawerComponent 
                       currentUnit={formData.department}
-                      onUnitSelect={(unit) => handleInputChange('department', unit)}
+                      onUnitSelect={(unit) => {
+                        handleInputChange('department', unit.name);
+                        handleInputChange('agency_id', unit.id.toString());
+                      }}
+                    />
+                    <Input 
+                      type="hidden"
+                      value={formData.agency_id}
                     />
                   </div>
                   <div className="space-y-2">
                     <Label>行政區</Label>
                     <DistrictSelectorDrawerComponent 
                       currentDistrict={formData.district}
-                      onDistrictSelect={(district) => handleInputChange('district', district)}
+                      onDistrictSelect={(district) => {
+                        handleInputChange('district', district.name);
+                        handleInputChange('district_id', district.id.toString());
+                      }}
+                    />
+                    <Input 
+                      type="hidden"
+                      value={formData.district_id}
                     />
                   </div>
                   <div className="space-y-2">
@@ -725,7 +743,9 @@ export function OneIdleAssetDetail({ assetId, onBack, assetData, onUpdateSuccess
                             assetId: '資產ID',
                             assetType: '資產種類',
                             department: '管理機關',
+                            agency_id: '管理機關ID',
                             district: '行政區',
+                            district_id: '行政區ID',
                             section: '地段',
                             address: '地址',
                             coordinates: '定位座標',

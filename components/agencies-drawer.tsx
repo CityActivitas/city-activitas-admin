@@ -27,7 +27,7 @@ type ManagementUnit = {
 
 interface AgenciesDrawerProps {
   currentUnit: string;
-  onUnitSelect: (unit: string) => void;
+  onUnitSelect: (unit: { name: string, id: number }) => void;
 }
 
 export function AgenciesDrawerComponent ({ 
@@ -89,7 +89,10 @@ export function AgenciesDrawerComponent ({
 
   const handleConfirm = () => {
     if (selectedUnit) {
-      onUnitSelect(selectedUnit.name)
+      onUnitSelect({
+        name: selectedUnit.name,
+        id: selectedUnit.id
+      });
     }
     setIsOpen(false)
   }
