@@ -262,7 +262,7 @@ export function OneIdleAssetDetail({ assetId, onBack, assetData, onUpdateSuccess
       if (!token) return;
 
       // 定義各類欄位
-      const assetFields = ['assetType', 'department', 'district', 'section', 'address', 
+      const assetFields = ['assetType', 'agency_id', 'district_id', 'section', 'address', 
         'coordinates', 'areaCoordinates', 'markerName', 'status'];
       
       const buildingFields = ['buildingNumber', 'buildingType', 'landArea', 'usage', 
@@ -286,8 +286,8 @@ export function OneIdleAssetDetail({ assetId, onBack, assetData, onUpdateSuccess
       // 資產基本資料欄位映射
       const assetFieldsMap: { [key: string]: string } = {
         assetType: 'type',
-        department: 'agency_id',
-        district: 'district_id',
+        agency_id: 'agency_id',
+        district_id: 'district_id',
         section: 'section',
         address: 'address',
         coordinates: 'coordinates',
