@@ -90,7 +90,13 @@ export function OneProposalAssetDetail({
     if (userRole === 'admin') return true
     
     if (userRole === 'reporter') {
-      if (fieldName === 'reviewer_note') return false
+      // reporter 不能編輯狀態和審查相關欄位
+      const nonEditableForReporter = [
+        'proposal_status',  // 新增：reporter 不能編輯提案狀態
+        'reviewer_note'
+      ]
+      if (nonEditableForReporter.includes(fieldName)) return false
+      
       return ['提案中', '需要修改'].includes(proposal.proposal_status)
     }
 
@@ -462,7 +468,7 @@ export function OneProposalAssetDetail({
                     ) : key === 'proposal_status' ? (
                       <div key={key} className="space-y-2">
                         <Label>{label}</Label>
-                        {isEditing && canEdit(key) ? (
+                        {isEditing && userRole === 'admin' ? (  // 只有管理員可以編輯狀態
                           <Select
                             value={editedData.proposal_status}
                             onValueChange={(value) => handleFieldChange('proposal_status', value)}

@@ -77,8 +77,9 @@ export function OneRequestAssetDetail({
   // 從 localStorage 獲取用戶角色
   const userRole = JSON.parse(localStorage.getItem('user') || '{}')?.user_metadata?.system_role
 
-  // 判斷欄位是否可以編輯
+  // 修改 canEdit 函數
   const canEdit = (fieldName: string) => {
+    // 這些欄位永遠不能編輯
     const nonEditableFields = [
       'id', 
       'reporter_email', 
@@ -89,10 +90,18 @@ export function OneRequestAssetDetail({
     ]
     if (nonEditableFields.includes(fieldName)) return false
 
+    // 管理員可以編輯所有欄位
     if (userRole === 'admin') return true
     
+    // reporter 不能編輯狀態和審查相關欄位
     if (userRole === 'reporter') {
-      if (fieldName === 'reviewer_note') return false
+      const nonEditableForReporter = [
+        'requirement_status',  // 新增：reporter 不能編輯需求狀態
+        'reviewer_note'
+      ]
+      if (nonEditableForReporter.includes(fieldName)) return false
+
+      // 只有在 '提案中' 或 '需要修改' 狀態下才能編輯
       return ['提案中', '需要修改'].includes(request.requirement_status)
     }
 
@@ -348,7 +357,7 @@ export function OneRequestAssetDetail({
                       </>
                     ) : key === 'requirement_status' ? (
                       <div className="space-y-2">
-                        {isEditing && canEdit(key) ? (
+                        {isEditing && userRole === 'admin' ? (  // 只有管理員可以編輯狀態
                           <Select
                             value={editedData.requirement_status}
                             onValueChange={(value) => handleFieldChange('requirement_status', value)}
