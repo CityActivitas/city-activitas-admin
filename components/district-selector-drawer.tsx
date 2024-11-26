@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { ScrollArea } from "@/components/ui/scroll-area"
@@ -20,17 +20,14 @@ const DistrictSelectorDrawer = dynamic(
   { ssr: false }
 )
 
-const districts = [
-  "新營區", "鹽水區", "白河區", "柳營區", "後壁區", "東山區", "麻豆區",
-  "下營區", "六甲區", "官田區", "大內區", "佳里區", "學甲區", "西港區",
-  "七股區", "將軍區", "北門區", "新化區", "新市區", "善化區", "安定區",
-  "山上區", "玉井區", "楠西區", "南化區", "左鎮區", "仁德區", "歸仁區",
-  "關廟區", "龍崎區", "永康區", "東區", "南區", "中西區", "北區", "安南區", "安平區"
-]
+type District = {
+  id: number
+  name: string
+}
 
 interface DistrictSelectorDrawerProps {
   currentDistrict: string;
-  onDistrictSelect: (district: string) => void;
+  onDistrictSelect: (district: { name: string, id: number }) => void;
 }
 
 export function DistrictSelectorDrawerComponent({ 
@@ -39,26 +36,65 @@ export function DistrictSelectorDrawerComponent({
 }: DistrictSelectorDrawerProps) {
   const [isOpen, setIsOpen] = useState(false)
   const [filter, setFilter] = useState('')
-  const [tempSelectedDistrict, setTempSelectedDistrict] = useState<string>(currentDistrict)
+  const [districts, setDistricts] = useState<District[]>([])
+  const [selectedDistrict, setSelectedDistrict] = useState<District | null>(null)
+  const [filteredDistricts, setFilteredDistricts] = useState<District[]>([])
+
+  useEffect(() => {
+    const fetchDistricts = async () => {
+      try {
+        const token = localStorage.getItem('access_token')
+        if (!token) return
+
+        const response = await fetch('http://localhost:8000/api/v1/common/districts', {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        })
+
+        if (!response.ok) throw new Error('Failed to fetch districts')
+
+        const data = await response.json()
+        setDistricts(data)
+        setFilteredDistricts(data)
+        
+        const currentDistrictData = data.find((district: District) => district.name === currentDistrict)
+        setSelectedDistrict(currentDistrictData || null)
+      } catch (error) {
+        console.error('Error fetching districts:', error)
+      }
+    }
+
+    fetchDistricts()
+  }, [currentDistrict])
+
+  useEffect(() => {
+    const filtered = districts.filter(district => 
+      district.name.toLowerCase().includes(filter.toLowerCase())
+    )
+    setFilteredDistricts(filtered)
+  }, [filter, districts])
 
   const handleOpenChange = (open: boolean) => {
     setIsOpen(open)
     if (open) {
       setFilter('')
+      setSelectedDistrict(districts.find(district => district.name === currentDistrict) || null)
     }
   }
 
-  const filteredDistricts = districts.filter(district => 
-    district.toLowerCase().includes(filter.toLowerCase())
-  )
-
   const handleConfirm = () => {
-    onDistrictSelect(tempSelectedDistrict)
+    if (selectedDistrict) {
+      onDistrictSelect({
+        name: selectedDistrict.name,
+        id: selectedDistrict.id
+      })
+    }
     setIsOpen(false)
   }
 
   const handleCancel = () => {
-    setTempSelectedDistrict(currentDistrict)
+    setSelectedDistrict(districts.find(district => district.name === currentDistrict) || null)
     setIsOpen(false)
   }
 
@@ -75,9 +111,7 @@ export function DistrictSelectorDrawerComponent({
       <DrawerContent>
         <DrawerHeader>
           <DrawerTitle>選擇行政區</DrawerTitle>
-          <DrawerDescription>
-            請選擇要修改的行政區域
-          </DrawerDescription>
+          <DrawerDescription>請選擇要修改的行政區域</DrawerDescription>
         </DrawerHeader>
         <div className="p-4 pb-0">
           <Input
@@ -91,12 +125,12 @@ export function DistrictSelectorDrawerComponent({
           <div className="flex flex-wrap gap-1">
             {filteredDistricts.map((district) => (
               <Button
-                key={district}
-                variant={tempSelectedDistrict === district ? "default" : "outline"}
-                onClick={() => setTempSelectedDistrict(district)}
+                key={district.id}
+                variant={selectedDistrict?.id === district.id ? "default" : "outline"}
+                onClick={() => setSelectedDistrict(district)}
                 className="min-w-[4.5rem]"
               >
-                {district}
+                {district.name}
               </Button>
             ))}
           </div>

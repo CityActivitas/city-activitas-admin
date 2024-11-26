@@ -28,6 +28,7 @@ interface LocationDrawerProps {
   onConfirm: (address: string, coordinates: string) => void
   initialAddress?: string
   initialCoordinates?: string
+  initialSearchValue?: string
 }
 
 // 處理座標字串的函數
@@ -44,7 +45,8 @@ export function LocationDrawerComponent({
   onOpenChange, 
   onConfirm,
   initialAddress = "",
-  initialCoordinates = ""
+  initialCoordinates = "",
+  initialSearchValue = ""
 }: LocationDrawerProps) {
   const { isLoaded, loadError } = useGoogleMaps()
   const { toast } = useToast()
@@ -56,8 +58,7 @@ export function LocationDrawerComponent({
 
   React.useEffect(() => {
     if (open) {
-      setAddress(initialAddress);
-      
+      // 如果有初始座標，優先使用座標定位
       if (initialCoordinates && initialCoordinates !== '()') {
         try {
           const coords = formatCoordinates(initialCoordinates);
@@ -65,88 +66,23 @@ export function LocationDrawerComponent({
             setMarker(coords);
             map?.panTo(coords);
             setCoordinates(`(${coords.lat.toFixed(6)},${coords.lng.toFixed(6)})`);
-          } else if (initialAddress && isLoaded) {
-            // 如果座標無效但有地址，則使用地址獲取座標
-            const geocoder = new window.google.maps.Geocoder();
-            geocoder.geocode({
-              address: initialAddress,
-              language: 'zh-TW'
-            }).then(response => {
-              if (response.results && response.results.length > 0) {
-                const location = response.results[0].geometry.location;
-                const latLng = {
-                  lat: location.lat(),
-                  lng: location.lng()
-                };
-                setMarker(latLng);
-                map?.panTo(latLng);
-                setCoordinates(`(${latLng.lat.toFixed(6)},${latLng.lng.toFixed(6)})`);
-              }
-            }).catch(error => {
-              console.error('Geocoding error:', error);
-              toast({
-                variant: "destructive",
-                title: "地址查詢錯誤",
-                description: "無法找到該地址的定位點，請確認地址是否正確。",
-              })
-            });
           }
         } catch (error) {
           console.error('Error parsing coordinates:', error);
-          if (initialAddress && isLoaded) {
-            const geocoder = new window.google.maps.Geocoder();
-            geocoder.geocode({
-              address: initialAddress,
-              language: 'zh-TW'
-            }).then(response => {
-              if (response.results && response.results.length > 0) {
-                const location = response.results[0].geometry.location;
-                const latLng = {
-                  lat: location.lat(),
-                  lng: location.lng()
-                };
-                setMarker(latLng);
-                map?.panTo(latLng);
-                setCoordinates(`(${latLng.lat.toFixed(6)},${latLng.lng.toFixed(6)})`);
-              }
-            }).catch(error => {
-              console.error('Geocoding error:', error);
-              toast({
-                variant: "destructive",
-                title: "地址查詢錯誤",
-                description: "無法找到該地址的定位點，請確認地址是否正確。",
-              })
-            });
-          }
         }
-      } else if (initialAddress && isLoaded) {
-        // 如果沒有座標但有地址，則使用地址獲取座標
-        const geocoder = new window.google.maps.Geocoder();
-        geocoder.geocode({
-          address: initialAddress,
-          language: 'zh-TW'
-        }).then(response => {
-          if (response.results && response.results.length > 0) {
-            const location = response.results[0].geometry.location;
-            const latLng = {
-              lat: location.lat(),
-              lng: location.lng()
-            };
-            setMarker(latLng);
-            map?.panTo(latLng);
-            setCoordinates(`(${latLng.lat.toFixed(6)},${latLng.lng.toFixed(6)})`);
-          }
-        }).catch(error => {
-          console.error('Geocoding error:', error);
-          toast({
-            variant: "destructive",
-            title: "地址查詢錯誤",
-            description: "無法找到該地址的定位點，請確認地址是否正確。",
-          })
-        });
+      }
+      
+      // 如果有搜尋值，執行搜尋
+      if (initialSearchValue) {
+        setSearchValue(initialSearchValue);
+        // 延遲執行搜尋，確保地圖已載入
+        const timer = setTimeout(() => {
+          handleSearch();
+        }, 500);
+        return () => clearTimeout(timer);
       }
     }
-  }, [open, initialAddress, initialCoordinates, map, isLoaded, toast])
+  }, [open, initialCoordinates, initialSearchValue, map]);
 
   const handleMapClick = async (event: google.maps.MapMouseEvent) => {
     if (!event.latLng) return

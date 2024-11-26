@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { LogOut, Home, Briefcase, CheckSquare } from 'lucide-react'
+import { LogOut, Home, Briefcase, CheckSquare, Building, FileText } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { Header } from "@/components/header"
 
@@ -15,6 +15,8 @@ export function Dashboard() {
     inProgress: 8,
     activated: 23
   })
+  const [proposalCount, setProposalCount] = useState(0)
+  const [requestCount, setRequestCount] = useState(0)
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -26,7 +28,13 @@ export function Dashboard() {
         }
 
         try {
-          const [idleResponse, casesResponse, activatedResponse] = await Promise.all([
+          const [
+            idleResponse, 
+            casesResponse, 
+            activatedResponse, 
+            proposalsResponse,
+            requestsResponse
+          ] = await Promise.all([
             fetch('http://localhost:8000/api/v1/idle', {
               headers: { 'Authorization': `Bearer ${token}` }
             }),
@@ -35,17 +43,33 @@ export function Dashboard() {
             }),
             fetch('http://localhost:8000/api/v1/activated', {
               headers: { 'Authorization': `Bearer ${token}` }
+            }),
+            fetch('http://localhost:8000/api/v1/proposals/asset-proposals', {
+              headers: { 'Authorization': `Bearer ${token}` }
+            }),
+            fetch('http://localhost:8000/api/v1/proposals/asset-requirements', {
+              headers: { 'Authorization': `Bearer ${token}` }
             })
           ])
 
-          if (!idleResponse.ok || !casesResponse.ok || !activatedResponse.ok) {
-            throw new Error('Failed to fetch assets data')
+          if (!idleResponse.ok || !casesResponse.ok || 
+              !activatedResponse.ok || !proposalsResponse.ok || 
+              !requestsResponse.ok) {
+            throw new Error('Failed to fetch data')
           }
 
-          const [idleData, casesData, activatedData] = await Promise.all([
+          const [
+            idleData, 
+            casesData, 
+            activatedData, 
+            proposalsData,
+            requestsData
+          ] = await Promise.all([
             idleResponse.json(),
             casesResponse.json(),
-            activatedResponse.json()
+            activatedResponse.json(),
+            proposalsResponse.json(),
+            requestsResponse.json()
           ])
           
           setAssetCounts({
@@ -53,10 +77,11 @@ export function Dashboard() {
             inProgress: casesData.length,
             activated: activatedData.length
           })
-
+          setProposalCount(proposalsData.length)
+          setRequestCount(requestsData.length)
           setIsLoading(false)
         } catch (error) {
-          console.error('Error fetching assets data:', error)
+          console.error('Error fetching data:', error)
           setIsLoading(false)
         }
       }
@@ -64,12 +89,6 @@ export function Dashboard() {
     
     checkAuth()
   }, [router])
-
-  const handleViewIdleAssets = () => {
-    router.push('/idle-asset-detail', {
-      state: { assets: assetCounts.idle }
-    })
-  }
 
   if (isLoading) {
     return null
@@ -80,24 +99,44 @@ export function Dashboard() {
       <Header />
       <main className="container mx-auto px-4 pt-24">
         <div className="py-6">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
             <AssetCard 
               title="閒置資產" 
               icon={<Home className="h-6 w-6" />} 
               count={assetCounts.idle}
-              onClick={handleViewIdleAssets}
+              description="閒置資產總數"
+              onClick={() => router.push('/idle-asset-detail')}
             />
             <AssetCard 
               title="進行中案件" 
               icon={<Briefcase className="h-6 w-6" />} 
               count={assetCounts.inProgress}
+              description="進行中案件總數"
               onClick={() => router.push('/in-progress-cases-detail')}
             />
             <AssetCard 
               title="已活化資產" 
               icon={<CheckSquare className="h-6 w-6" />} 
               count={assetCounts.activated}
+              description="已活化資產總數"
               onClick={() => router.push('/activated-assets-detail')}
+            />
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <AssetCard 
+              title="提報資產" 
+              icon={<Building className="h-6 w-6" />} 
+              count={proposalCount}
+              description="提報閒置資產"
+              onClick={() => router.push('/report-asset')}
+            />
+            <AssetCard 
+              title="申請資產需求" 
+              icon={<FileText className="h-6 w-6" />} 
+              count={requestCount}
+              description="申請使用閒置資產"
+              onClick={() => router.push('/request-asset')}
             />
           </div>
         </div>
@@ -106,7 +145,7 @@ export function Dashboard() {
   )
 }
 
-function AssetCard({ title, icon, count, onClick }) {
+function AssetCard({ title, icon, count, description, onClick }) {
   return (
     <Card>
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -116,6 +155,9 @@ function AssetCard({ title, icon, count, onClick }) {
       <CardContent>
         <div className="text-2xl font-bold">{count}</div>
         <p className="text-xs text-muted-foreground">
+          {description}
+        </p>
+        <p className="text-xs text-muted-foreground mt-1">
           總計 {count} 筆資料
         </p>
         <Button className="mt-4 w-full" variant="outline" onClick={onClick}>
