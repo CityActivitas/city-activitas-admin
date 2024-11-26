@@ -223,21 +223,51 @@ export function OneRequestAssetDetail({
                     </DialogHeader>
                     <div className="space-y-2 text-sm">
                       {Object.entries(editedData).map(([key, value]) => {
+                        // 定義欄位標籤對應
+                        const label = {
+                          id: '需求編號',
+                          managing_agency: '需求機關',
+                          agency_id: '機關代碼',
+                          purpose: '需求用途',
+                          asset_type: '資產類型',
+                          preferred_floor: '希望樓層',
+                          area: '需求面積（平方公尺）',
+                          district: '希望地點',
+                          district_id: '地點代碼',
+                          urgency_note: '急迫性說明',
+                          funding_source: '經費來源',
+                          requirement_status: '需求狀態',
+                          reporter_email: '申請人信箱',
+                          reviewer_note: '審查備註',
+                          created_at: '申請時間',
+                          updated_at: '更新時間',
+                          reviewed_at: '審查時間'
+                        }[key] || key;
+
+                        // 檢查值是否被修改
+                        const isModified = JSON.stringify(request[key as keyof typeof request]) !== JSON.stringify(value);
+
+                        // 跳過不需要顯示的欄位
                         if ([
                           'created_at', 
                           'updated_at', 
                           'reviewed_at', 
                           'reporter_email', 
-                          'reviewer_id'
+                          'reviewer_id',
+                          'agency_id',
+                          'district_id'
                         ].includes(key)) {
                           return null;
                         }
+
                         return (
-                          <div key={key} className="grid grid-cols-2 gap-2">
-                            <span className="font-medium">{key}</span>
-                            <span>{value}</span>
+                          <div key={key} className="flex">
+                            <span className="w-32 flex-shrink-0">{label}:</span>
+                            <span className={`${isModified ? "font-bold text-red-500" : ""}`}>
+                              {value || '無'}
+                            </span>
                           </div>
-                        )
+                        );
                       })}
                     </div>
                     <DialogFooter>
