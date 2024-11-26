@@ -48,7 +48,13 @@ const formSchema = z.object({
   funding_source: z.string().min(1, { message: "請說明經費來源" }),
 })
 
-export function RequestAssetForm() {
+// 新增介面定義
+interface RequestAssetFormProps {
+  onSubmitSuccess?: () => void
+}
+
+// 修改元件定義，加入 props
+export function RequestAssetForm({ onSubmitSuccess }: RequestAssetFormProps) {
   const { toast } = useToast()
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -114,6 +120,8 @@ export function RequestAssetForm() {
       if (closeButton) {
         closeButton.click()
       }
+
+      onSubmitSuccess?.()
       
     } catch (error) {
       console.error('提交錯誤:', error)
@@ -308,7 +316,7 @@ export function RequestAssetForm() {
                       funding_source: '經費來源'
                     }[key] || key;
 
-                    // 跳過不需要顯示的欄位
+                    // ��過不需要顯示的欄位
                     if (['agency_id', 'district_id'].includes(key)) {
                       return null;
                     }

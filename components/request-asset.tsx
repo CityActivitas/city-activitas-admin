@@ -25,6 +25,11 @@ interface AssetRequest {
   reporter_email: string
 }
 
+interface SortConfig {
+  key: keyof AssetRequest
+  direction: 'asc' | 'desc'
+}
+
 export function RequestAsset() {
   const [showForm, setShowForm] = useState(false)
   const [requests, setRequests] = useState<AssetRequest[]>([])
@@ -91,6 +96,15 @@ export function RequestAsset() {
     }))
   }
 
+  const sortedRequests = [...requests].sort((a, b) => {
+    const aValue = a[sortConfig.key]
+    const bValue = b[sortConfig.key]
+    if (sortConfig.direction === 'asc') {
+      return aValue > bValue ? 1 : -1
+    }
+    return aValue < bValue ? 1 : -1
+  })
+
   return (
     <div className="min-h-screen bg-gray-100">
       <Header />
@@ -128,7 +142,7 @@ export function RequestAsset() {
         ) : requests.length > 0 ? (
           !selectedRequest && (
             <RequestAssetTable 
-              requests={requests}
+              requests={sortedRequests}
               sortConfig={sortConfig}
               onSort={handleSort}
               onRowClick={(requestId) => {
@@ -136,8 +150,8 @@ export function RequestAsset() {
                 if (request) {
                   setSelectedRequest({
                     ...request,
-                    managing_agency: agencyMap[request.agency_id] || request.managing_agency,
-                    district: districtMap[request.district_id] || request.district
+                    managing_agency: agencyMap[request.agency_id] || '',
+                    district: districtMap[request.district_id] || ''
                   })
                 }
               }}
