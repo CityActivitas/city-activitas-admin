@@ -15,7 +15,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
-import { OneInProgressCaseDetail } from '@/components/one-in-progress-case-detail'
+import { OneInProgressCaseDetail } from './one-in-progress-case-detail'
 
 interface SortConfig {
   key: keyof Case | null
@@ -120,7 +120,7 @@ export function InProgressCasesDetailComponent() {
 
   // 修改處理行點擊的函數
   const handleRowClick = (caseItem: Case) => {
-    console.log('Selected case:', caseItem); // 用於調試
+    // console.log('Selected case:', caseItem); // 用於調試
     setSelectedCase(caseItem);
   };
 

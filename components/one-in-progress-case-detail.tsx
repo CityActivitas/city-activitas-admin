@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
@@ -20,6 +20,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { CaseTasksTab } from "@/components/case-tasks-tab"
 
 interface OneInProgressCaseDetailProps {
   caseId: string
@@ -38,6 +39,31 @@ export function OneInProgressCaseDetail({
   const [formData, setFormData] = useState(caseData)
   const originalData = caseData
   const isModified = JSON.stringify(formData) !== JSON.stringify(originalData)
+  const [taskData, setTaskData] = useState<TaskData[]>([]);
+
+  useEffect(() => {
+    const fetchTasks = async () => {
+      const token = localStorage.getItem('access_token');
+      if (!token) return;
+
+      try {
+        const response = await fetch(`http://localhost:8000/api/v1/cases/${formData['案件ID']}/tasks`, {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
+
+        if (!response.ok) throw new Error('Failed to fetch tasks');
+
+        const data = await response.json();
+        setTaskData(data);
+      } catch (error) {
+        console.error('Error fetching tasks:', error);
+      }
+    };
+
+    fetchTasks();
+  }, [caseId]);
 
   const handleInputChange = (key: string, value: string) => {
     setFormData(prev => ({
@@ -91,8 +117,9 @@ export function OneInProgressCaseDetail({
       </div>
 
       <Tabs defaultValue="case-details" className="w-full">
-        <TabsList className="grid w-full grid-cols-1">
+        <TabsList className="grid w-full grid-cols-2">
           <TabsTrigger value="case-details">案件詳情</TabsTrigger>
+          <TabsTrigger value="task-list">案件任務列表</TabsTrigger>
         </TabsList>
         <TabsContent value="case-details">
           <div className="grid lg:grid-cols-2 gap-4">
@@ -216,6 +243,9 @@ export function OneInProgressCaseDetail({
               </CardContent>
             </Card>
           </div>
+        </TabsContent>
+        <TabsContent value="task-list">
+          <CaseTasksTab taskData={taskData} />
         </TabsContent>
       </Tabs>
     </div>
