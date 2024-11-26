@@ -4,6 +4,9 @@ import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { Header } from "@/components/header"
 import {
   Table,
   TableBody,
@@ -12,9 +15,11 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Header } from "@/components/header"
+
+interface SortConfig {
+  key: keyof ActivatedAsset | null
+  direction: 'asc' | 'desc'
+}
 
 type ActivatedAsset = {
   id: string
@@ -29,7 +34,6 @@ type ActivatedAsset = {
   '活化ID': number
   '活化年度': number
   '活化狀態': string
-  '活化結束日期': string | null
   '活化開始日期': string
   '用途類型': string
   '管理機關': string | null
@@ -44,54 +48,79 @@ type ActivatedAsset = {
 export function ActivatedAssetsDetailComponent() {
   const [assets, setAssets] = useState<ActivatedAsset[]>([])
   const [isLoading, setIsLoading] = useState(true)
+  const [sortConfig, setSortConfig] = useState<SortConfig>({ key: null, direction: 'asc' })
+  const [searchText, setSearchText] = useState('')
+  const [selectedAsset, setSelectedAsset] = useState<ActivatedAsset | null>(null)
   const router = useRouter()
 
-  // console.log(assets)
+  // 獲取資產列表
+  const fetchAssets = async () => {
+    if (typeof window !== 'undefined') {
+      const token = localStorage.getItem('access_token')
+      if (!token) {
+        router.push('/login')
+        return
+      }
 
-  useEffect(() => {
-    const fetchActivatedAssets = async () => {
-      if (typeof window !== 'undefined') {
-        const token = localStorage.getItem('access_token')
-        if (!token) {
-          router.push('/login')
-          return
-        }
-
-        try {
-          const response = await fetch('http://localhost:8000/api/v1/activated', {
-            headers: {
-              'Authorization': `Bearer ${token}`
-            }
-          })
-
-          if (!response.ok) {
-            throw new Error('Failed to fetch activated assets')
+      try {
+        const response = await fetch('http://localhost:8000/api/v1/activated', {
+          headers: {
+            'Authorization': `Bearer ${token}`
           }
+        })
 
-          const data = await response.json()
-          setAssets(data)
-        } catch (error) {
-          console.error('Error fetching activated assets:', error)
-        } finally {
-          setIsLoading(false)
-        }
+        if (!response.ok) throw new Error('Failed to fetch activated assets')
+        const data = await response.json()
+        setAssets(data)
+      } catch (error) {
+        console.error('Error fetching activated assets:', error)
+      } finally {
+        setIsLoading(false)
       }
     }
+  }
 
-    fetchActivatedAssets()
+  useEffect(() => {
+    fetchAssets()
   }, [router])
 
-  if (isLoading) {
-    return <div>載入中...</div>
+  // 處理排序
+  const handleSort = (key: keyof ActivatedAsset) => {
+    setSortConfig((prevSort) => ({
+      key,
+      direction: prevSort.key === key && prevSort.direction === 'asc' ? 'desc' : 'asc'
+    }))
   }
 
-  const handleEdit = (id: string) => {
-    console.log(`Editing activated asset with id: ${id}`)
+  // 排序邏輯
+  const getSortedAssets = (assets: ActivatedAsset[]) => {
+    if (!sortConfig.key) return assets
+
+    return [...assets].sort((a, b) => {
+      const aValue = a[sortConfig.key!]
+      const bValue = b[sortConfig.key!]
+
+      if (aValue < bValue) return sortConfig.direction === 'asc' ? -1 : 1
+      if (aValue > bValue) return sortConfig.direction === 'asc' ? 1 : -1
+      return 0
+    })
   }
 
-  const handleDelete = (id: string) => {
-    setAssets(assets.filter(asset => asset.id !== id))
+  // 過濾邏輯
+  const filteredAssets = assets.filter(asset => 
+    searchText === '' || 
+    Object.values(asset).some(value => 
+      value?.toString().toLowerCase().includes(searchText.toLowerCase())
+    )
+  )
+
+  const sortedAssets = getSortedAssets(filteredAssets)
+
+  const handleRowClick = (asset: ActivatedAsset) => {
+    setSelectedAsset(asset)
   }
+
+  if (isLoading) return <div>載入中...</div>
 
   return (
     <div className="min-h-screen bg-gray-100">
@@ -105,47 +134,60 @@ export function ActivatedAssetsDetailComponent() {
               <TabsTrigger value="add">新增資產</TabsTrigger>
             </TabsList>
             <TabsContent value="list">
-              <div className="relative rounded-md border">
-                <div className="overflow-auto max-h-[70vh]">
-                  <Table>
-                    <TableHeader className="sticky top-0 bg-gray-100 z-10 font-bold">
-                      <TableRow>
-                        <TableHead>活化ID</TableHead>
-                        <TableHead>活化年度</TableHead>
-                        <TableHead>列入計算</TableHead>
-                        <TableHead>地點說明</TableHead>
-                        <TableHead>用途類型</TableHead>
-                        <TableHead>需求機關</TableHead>
-                        <TableHead>計畫用途</TableHead>
-                        <TableHead>活化開始日期</TableHead>
-                        <TableHead>活化結束日期</TableHead>
-                        <TableHead className="font-bold">操作</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {assets.map((asset, index) => (
-                        <TableRow key={asset.id || `asset-${index}`}>
-                          <TableCell>{asset['活化ID']}</TableCell>
-                          <TableCell>{asset['活化年度']}</TableCell>
-                          <TableCell>{asset['列入計算']}</TableCell>
-                          <TableCell>{asset['地點說明']}</TableCell>
-                          <TableCell>{asset['用途類型']}</TableCell>
-                          <TableCell>{asset['需求機關']}</TableCell>
-                          <TableCell>{asset['計畫用途']}</TableCell>
-                          <TableCell>{asset['活化開始日期']}</TableCell>
-                          <TableCell>{asset['活化結束日期'] || '-'}</TableCell>
-                          <TableCell>
-                            <Button variant="outline" size="sm" className="mr-2" onClick={() => handleEdit(asset.id)}>
-                              修改
-                            </Button>
-                            <Button variant="destructive" size="sm" onClick={() => handleDelete(asset.id)}>
-                              刪除
-                            </Button>
-                          </TableCell>
+              <div className="space-y-4">
+                {/* 搜尋欄位 */}
+                <div className="flex gap-2">
+                  <Input
+                    placeholder="搜尋資產..."
+                    value={searchText}
+                    onChange={(e) => setSearchText(e.target.value)}
+                    className="max-w-sm"
+                  />
+                </div>
+
+                {/* 表格 */}
+                <div className="relative rounded-md border">
+                  <div className="overflow-auto max-h-[70vh]">
+                    <Table>
+                      <TableHeader className="sticky top-0 bg-gray-100 z-10">
+                        <TableRow>
+                          {[
+                            '活化ID', '活化年度', '列入計算', '地點說明',
+                            '用途類型', '需求機關', '計畫用途', '活化開始日期'
+                          ].map((header) => (
+                            <TableHead 
+                              key={header}
+                              className="cursor-pointer hover:bg-gray-200"
+                              onClick={() => handleSort(header as keyof ActivatedAsset)}
+                            >
+                              {header}
+                              {sortConfig.key === header && (
+                                <span>{sortConfig.direction === 'asc' ? ' ↑' : ' ↓'}</span>
+                              )}
+                            </TableHead>
+                          ))}
                         </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
+                      </TableHeader>
+                      <TableBody>
+                        {sortedAssets.map((asset) => (
+                          <TableRow 
+                            key={`${asset.id}-${asset['活化ID']}`}
+                            className="cursor-pointer hover:bg-gray-50"
+                            onClick={() => handleRowClick(asset)}
+                          >
+                            <TableCell>{asset['活化ID']}</TableCell>
+                            <TableCell>{asset['活化年度']}</TableCell>
+                            <TableCell>{asset['列入計算']}</TableCell>
+                            <TableCell>{asset['地點說明']}</TableCell>
+                            <TableCell>{asset['用途類型']}</TableCell>
+                            <TableCell>{asset['需求機關']}</TableCell>
+                            <TableCell>{asset['計畫用途']}</TableCell>
+                            <TableCell>{asset['活化開始日期']}</TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </div>
                 </div>
               </div>
             </TabsContent>
