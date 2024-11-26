@@ -124,6 +124,15 @@ export function OneRequestAssetDetail({
 
   const handleSave = async () => {
     try {
+      // 如果是 reporter 且原始狀態是 "需要修改"，自動將狀態改為 "提案中"
+      const submitData = {
+        ...editedData,
+      }
+
+      if (userRole === 'reporter' && request.requirement_status === '需要修改') {
+        submitData.requirement_status = '提案中'
+      }
+
       const token = localStorage.getItem('access_token')
       const response = await fetch(`http://localhost:8000/api/v1/proposals/asset-requirements/${request.id}`, {
         method: 'PUT',
@@ -131,29 +140,36 @@ export function OneRequestAssetDetail({
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(editedData)
+        body: JSON.stringify(submitData)
       })
 
       if (!response.ok) throw new Error('更新失敗')
 
       const updatedRequest = await response.json()
-      setRequest(updatedRequest)
+      setRequest({
+        ...updatedRequest,
+        managing_agency: agencyMap[updatedRequest.agency_id] || updatedRequest.managing_agency,
+        district: districtMap[updatedRequest.district_id] || updatedRequest.district
+      })
       setIsEditing(false)
       
       toast({
         title: "更新成功",
-        description: "資料已成功更新",
+        description: userRole === 'reporter' && request.requirement_status === '需要修改' 
+          ? "資料已更新，狀態已自動改為「提案中」"
+          : "資料已成功更新",
         variant: "default",
       })
 
+      // 回到列表頁面並重新載入資料
       onBack()
       
     } catch (error) {
       console.error('更新錯誤:', error)
       toast({
+        variant: "destructive",
         title: "更新失敗",
         description: "更新資料時發生錯誤，請稍後再試",
-        variant: "destructive",
       })
     }
   }
@@ -222,7 +238,13 @@ export function OneRequestAssetDetail({
                       </DialogDescription>
                     </DialogHeader>
                     <div className="space-y-2 text-sm">
-                      {Object.entries(editedData).map(([key, value]) => {
+                      {Object.entries({
+                        ...editedData,
+                        // 如果是 reporter 且原始狀態是 "需要修改"，顯示將要變更的狀態
+                        requirement_status: userRole === 'reporter' && request.requirement_status === '需要修改' 
+                          ? '提案中' 
+                          : editedData.requirement_status
+                      }).map(([key, value]) => {
                         // 定義欄位標籤對應
                         const label = {
                           id: '需求編號',
@@ -244,8 +266,10 @@ export function OneRequestAssetDetail({
                           reviewed_at: '審查時間'
                         }[key] || key;
 
-                        // 檢查值是否被修改
-                        const isModified = JSON.stringify(request[key as keyof typeof request]) !== JSON.stringify(value);
+                        // 檢查值是否被修改（需要特別處理自動狀態變更的情況）
+                        const isModified = key === 'requirement_status' && userRole === 'reporter' && request.requirement_status === '需要修改'
+                          ? true  // 如果是自動狀態變更，強制顯示為已修改
+                          : JSON.stringify(request[key as keyof typeof request]) !== JSON.stringify(value);
 
                         // 跳過不需要顯示的欄位
                         if ([
@@ -264,7 +288,13 @@ export function OneRequestAssetDetail({
                           <div key={key} className="flex">
                             <span className="w-32 flex-shrink-0">{label}:</span>
                             <span className={`${isModified ? "font-bold text-red-500" : ""}`}>
-                              {value || '無'}
+                              {key === 'requirement_status' && isModified ? (
+                                <>
+                                  {request.requirement_status} → {value}
+                                </>
+                              ) : (
+                                value || '無'
+                              )}
                             </span>
                           </div>
                         );
