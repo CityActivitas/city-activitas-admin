@@ -4,6 +4,9 @@ import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { Header } from "@/components/header"
 import {
   Table,
   TableBody,
@@ -12,9 +15,11 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Header } from "@/components/header"
+
+interface SortConfig {
+  key: keyof Case | null
+  direction: 'asc' | 'desc'
+}
 
 type Case = {
   id: string
@@ -38,54 +43,81 @@ type Case = {
 export function InProgressCasesDetailComponent() {
   const [cases, setCases] = useState<Case[]>([])
   const [isLoading, setIsLoading] = useState(true)
+  const [sortConfig, setSortConfig] = useState<SortConfig>({ key: null, direction: 'asc' })
+  const [searchText, setSearchText] = useState('')
+  const [selectedCase, setSelectedCase] = useState<Case | null>(null)
   const router = useRouter()
 
-  // console.log(cases)
+  // 獲取案件列表
+  const fetchCases = async () => {
+    if (typeof window !== 'undefined') {
+      const token = localStorage.getItem('access_token')
+      if (!token) {
+        router.push('/login')
+        return
+      }
 
-  useEffect(() => {
-    const fetchCases = async () => {
-      if (typeof window !== 'undefined') {
-        const token = localStorage.getItem('access_token')
-        if (!token) {
-          router.push('/login')
-          return
-        }
-
-        try {
-          const response = await fetch('http://localhost:8000/api/v1/cases', {
-            headers: {
-              'Authorization': `Bearer ${token}`
-            }
-          })
-
-          if (!response.ok) {
-            throw new Error('Failed to fetch cases')
+      try {
+        const response = await fetch('http://localhost:8000/api/v1/cases', {
+          headers: {
+            'Authorization': `Bearer ${token}`
           }
+        })
 
-          const data = await response.json()
-          setCases(data)
-        } catch (error) {
-          console.error('Error fetching cases:', error)
-        } finally {
-          setIsLoading(false)
-        }
+        if (!response.ok) throw new Error('Failed to fetch cases')
+        const data = await response.json()
+        setCases(data)
+      } catch (error) {
+        console.error('Error fetching cases:', error)
+      } finally {
+        setIsLoading(false)
       }
     }
+  }
 
+  useEffect(() => {
     fetchCases()
   }, [router])
 
-  if (isLoading) {
-    return <div>載入中...</div>
+  // 處理排序
+  const handleSort = (key: keyof Case) => {
+    setSortConfig((prevSort) => ({
+      key,
+      direction: prevSort.key === key && prevSort.direction === 'asc' ? 'desc' : 'asc'
+    }))
   }
 
-  const handleEdit = (id: string) => {
-    console.log(`Editing case with id: ${id}`)
+  // 排序邏輯
+  const getSortedCases = (cases: Case[]) => {
+    if (!sortConfig.key) return cases
+
+    return [...cases].sort((a, b) => {
+      const aValue = a[sortConfig.key!]
+      const bValue = b[sortConfig.key!]
+
+      if (['建立時間', '更新時間'].includes(sortConfig.key)) {
+        const aDate = new Date(aValue).getTime()
+        const bDate = new Date(bValue).getTime()
+        return sortConfig.direction === 'asc' ? aDate - bDate : bDate - aDate
+      }
+
+      if (aValue < bValue) return sortConfig.direction === 'asc' ? -1 : 1
+      if (aValue > bValue) return sortConfig.direction === 'asc' ? 1 : -1
+      return 0
+    })
   }
 
-  const handleDelete = (id: string) => {
-    setCases(cases.filter(case_ => case_.id !== id))
-  }
+  // 過濾邏輯
+  const filteredCases = cases.filter(caseItem => 
+    searchText === '' || 
+    Object.values(caseItem).some(value => 
+      value?.toString().toLowerCase().includes(searchText.toLowerCase())
+    )
+  )
+
+  const sortedCases = getSortedCases(filteredCases)
+
+  if (isLoading) return <div>載入中...</div>
 
   return (
     <div className="min-h-screen bg-gray-100">
@@ -99,45 +131,60 @@ export function InProgressCasesDetailComponent() {
               <TabsTrigger value="add">新增案件</TabsTrigger>
             </TabsList>
             <TabsContent value="list">
-              <div className="relative rounded-md border">
-                <div className="overflow-auto max-h-[70vh]">
-                  <Table>
-                    <TableHeader className="sticky top-0 bg-gray-100 z-10 font-bold">
-                      <TableRow>
-                        <TableHead>案件ID</TableHead>
-                        <TableHead>案件狀態</TableHead>
-                        <TableHead>活化目標說明</TableHead>
-                        <TableHead>活化目標類型</TableHead>
-                        <TableHead>任務總數</TableHead>
-                        <TableHead>已完成任務數</TableHead>
-                        <TableHead>建立時間</TableHead>
-                        <TableHead>更新時間</TableHead>
-                        <TableHead className="font-bold">操作</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {cases.map((caseItem, index) => (
-                        <TableRow key={`${caseItem.id}-${index}`}>
-                          <TableCell>{caseItem['案件ID']}</TableCell>
-                          <TableCell>{caseItem['案件狀態']}</TableCell>
-                          <TableCell>{caseItem['活化目標說明']}</TableCell>
-                          <TableCell>{caseItem['活化目標類型']}</TableCell>
-                          <TableCell>{caseItem['任務總數']}</TableCell>
-                          <TableCell>{caseItem['已完成任務數']}</TableCell>
-                          <TableCell>{caseItem['建立時間']}</TableCell>
-                          <TableCell>{caseItem['更新時間']}</TableCell>
-                          <TableCell>
-                            <Button variant="outline" size="sm" className="mr-2" onClick={() => handleEdit(caseItem.id)}>
-                              修改
-                            </Button>
-                            <Button variant="destructive" size="sm" onClick={() => handleDelete(caseItem.id)}>
-                              刪除
-                            </Button>
-                          </TableCell>
+              <div className="space-y-4">
+                {/* 搜尋欄位 */}
+                <div className="flex gap-2">
+                  <Input
+                    placeholder="搜尋案件..."
+                    value={searchText}
+                    onChange={(e) => setSearchText(e.target.value)}
+                    className="max-w-sm"
+                  />
+                </div>
+
+                {/* 表格 */}
+                <div className="relative rounded-md border">
+                  <div className="overflow-auto max-h-[70vh]">
+                    <Table>
+                      <TableHeader className="sticky top-0 bg-gray-100 z-10">
+                        <TableRow>
+                          {[
+                            '案件ID', '案件狀態', '活化目標說明', '活化目標類型',
+                            '任務總數', '已完成任務數', '建立時間', '更新時間'
+                          ].map((header) => (
+                            <TableHead 
+                              key={header}
+                              className="cursor-pointer hover:bg-gray-200"
+                              onClick={() => handleSort(header as keyof Case)}
+                            >
+                              {header}
+                              {sortConfig.key === header && (
+                                <span>{sortConfig.direction === 'asc' ? ' ↑' : ' ↓'}</span>
+                              )}
+                            </TableHead>
+                          ))}
                         </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
+                      </TableHeader>
+                      <TableBody>
+                        {sortedCases.map((caseItem) => (
+                          <TableRow 
+                            key={caseItem.id}
+                            className="cursor-pointer hover:bg-gray-50"
+                            onClick={() => handleRowClick(caseItem.id)}
+                          >
+                            <TableCell>{caseItem['案件ID']}</TableCell>
+                            <TableCell>{caseItem['案件狀態']}</TableCell>
+                            <TableCell>{caseItem['活化目標說明']}</TableCell>
+                            <TableCell>{caseItem['活化目標類型']}</TableCell>
+                            <TableCell>{caseItem['任務總數']}</TableCell>
+                            <TableCell>{caseItem['已完成任務數']}</TableCell>
+                            <TableCell>{caseItem['建立時間']}</TableCell>
+                            <TableCell>{caseItem['更新時間']}</TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </div>
                 </div>
               </div>
             </TabsContent>
