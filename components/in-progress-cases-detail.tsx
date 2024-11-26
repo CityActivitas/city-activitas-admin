@@ -15,6 +15,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
+import { OneInProgressCaseDetail } from '@/components/one-in-progress-case-detail'
 
 interface SortConfig {
   key: keyof Case | null
@@ -117,7 +118,30 @@ export function InProgressCasesDetailComponent() {
 
   const sortedCases = getSortedCases(filteredCases)
 
+  // 修改處理行點擊的函數
+  const handleRowClick = (caseItem: Case) => {
+    console.log('Selected case:', caseItem); // 用於調試
+    setSelectedCase(caseItem);
+  };
+
   if (isLoading) return <div>載入中...</div>
+
+  // 如果有選中的案件，顯示詳情頁面
+  if (selectedCase) {
+    return (
+      <div className="min-h-screen bg-gray-100">
+        <Header />
+        <div className="container mx-auto px-4 pt-24">
+          <OneInProgressCaseDetail 
+            caseId={selectedCase.id}
+            onBack={() => setSelectedCase(null)}
+            caseData={selectedCase}
+            onUpdateSuccess={fetchCases}
+          />
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-100">
@@ -168,9 +192,9 @@ export function InProgressCasesDetailComponent() {
                       <TableBody>
                         {sortedCases.map((caseItem) => (
                           <TableRow 
-                            key={caseItem.id}
+                            key={caseItem.id || caseItem['案件ID']}
                             className="cursor-pointer hover:bg-gray-50"
-                            onClick={() => handleRowClick(caseItem.id)}
+                            onClick={() => handleRowClick(caseItem)}
                           >
                             <TableCell>{caseItem['案件ID']}</TableCell>
                             <TableCell>{caseItem['案件狀態']}</TableCell>
