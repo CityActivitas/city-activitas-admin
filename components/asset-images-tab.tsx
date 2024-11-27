@@ -3,7 +3,7 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
-import { Upload, X, Pencil, Trash2, MoreVertical } from "lucide-react"
+import { Upload, X, Pencil, Trash2, MoreVertical, Loader2 } from "lucide-react"
 import { useDropzone } from 'react-dropzone'
 import { useToast } from "@/hooks/use-toast"
 import {
@@ -62,6 +62,7 @@ export function AssetImagesTab({ assetId }: AssetImagesTabProps) {
   const [deletingImage, setDeletingImage] = useState<AssetImage | null>(null)
   const [editTitle, setEditTitle] = useState('')
   const [editDescription, setEditDescription] = useState('')
+  const [isUploading, setIsUploading] = useState(false)
 
   // 取得圖片列表
   const fetchImages = async () => {
@@ -104,6 +105,8 @@ export function AssetImagesTab({ assetId }: AssetImagesTabProps) {
 
   const handleUpload = async () => {
     if (!selectedFile || !imageTitle || !assetId) return
+    
+    setIsUploading(true)
 
     try {
       const token = localStorage.getItem('access_token')
@@ -145,22 +148,16 @@ export function AssetImagesTab({ assetId }: AssetImagesTabProps) {
 
       const result = await response.json()
       
-      // 顯示成功訊息
       toast({
         title: "上傳成功",
         description: "圖片已成功上傳",
       })
 
-      // 清除表單
       setImageTitle('')
       setImageDescription('')
       setSelectedFile(null)
       setPreviewImage(null)
-      
-      // 關閉上傳區塊
       setShowUploadCard(false)
-      
-      // 重新載入圖片列表
       await fetchImages()
       
     } catch (error) {
@@ -170,6 +167,8 @@ export function AssetImagesTab({ assetId }: AssetImagesTabProps) {
         description: error instanceof Error ? error.message : "上傳圖片時發生錯誤",
         variant: "destructive",
       })
+    } finally {
+      setIsUploading(false)
     }
   }
 
@@ -393,15 +392,29 @@ export function AssetImagesTab({ assetId }: AssetImagesTabProps) {
             <div className="flex gap-2 justify-end">
               <Button
                 variant="outline"
-                onClick={handleReset}
+                onClick={() => {
+                  setShowUploadCard(false)
+                  setPreviewImage(null)
+                  setImageTitle('')
+                  setImageDescription('')
+                  setSelectedFile(null)
+                }}
+                disabled={isUploading}
               >
-                清除
+                取消
               </Button>
               <Button
                 onClick={handleUpload}
-                disabled={!selectedFile || !imageTitle}
+                disabled={!selectedFile || !imageTitle || isUploading}
               >
-                新增
+                {isUploading ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    上傳中...
+                  </>
+                ) : (
+                  '新增'
+                )}
               </Button>
             </div>
           </CardContent>
@@ -546,6 +559,16 @@ export function AssetImagesTab({ assetId }: AssetImagesTabProps) {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* 在上傳時為整個上傳區域添加 loading 遮罩 */}
+      {isUploading && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div className="bg-white p-4 rounded-lg flex items-center space-x-2">
+            <Loader2 className="h-6 w-6 animate-spin text-primary" />
+            <span>正在上傳圖片...</span>
+          </div>
+        </div>
+      )}
     </div>
   )
 } 
