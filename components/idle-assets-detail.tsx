@@ -15,6 +15,7 @@ import dynamic from 'next/dynamic'
 import { OneIdleAssetDetail } from '@/components/one-idle-asset-detail'
 import { Asset, SortConfig } from '@/components/types'
 import { useToast } from "@/hooks/use-toast"
+import * as XLSX from 'xlsx'
 
 const Header = dynamic(
   () => import('@/components/header').then(mod => mod.Header),
@@ -56,6 +57,7 @@ export function IdleAssetsDetailComponent() {
         }
 
         const data = await response.json()
+        console.log(data)
         setAssets(data)
       } catch (error) {
         console.error('Error fetching idle assets:', error)
@@ -167,6 +169,31 @@ export function IdleAssetsDetailComponent() {
     setSelectedAsset(asset || null);
   };
 
+  // 添加匯出Excel功能
+  const handleExportExcel = () => {
+    // 依照 API 實際回傳的資料結構匯出
+    const exportData = sortedAssets.map(asset => ({
+      'id': asset.id,
+      '地址': asset['地址'],
+      '地段': asset['地段'],
+      '定位座標': asset['定位座標'],
+      '建立時間': asset['建立時間'],
+      '標的名稱': asset['標的名稱'],
+      '狀態': asset['狀態'],
+      '管理機關': asset['管理機關'],
+      '行政區': asset['行政區'],
+      '資產類型': asset['資產類型']
+    }))
+
+    // 創建工作表
+    const ws = XLSX.utils.json_to_sheet(exportData)
+    const wb = XLSX.utils.book_new()
+    XLSX.utils.book_append_sheet(wb, ws, '閒置資產')
+
+    // 下載檔案
+    XLSX.writeFile(wb, '閒置資產清單.xlsx')
+  }
+
   if (selectedAsset) {
     return (
       <div className="min-h-screen bg-gray-200">
@@ -188,32 +215,39 @@ export function IdleAssetsDetailComponent() {
       <Header />
       <div className="container mx-auto px-4 pt-24">
         <div className="py-2">
-          <h1 className="text-2xl font-bold mb-4">閒置資產共{assets.length}筆</h1>
+          <div className="flex justify-between items-center mb-4">
+            <h1 className="text-2xl font-bold">閒置資產共{assets.length}筆</h1>
+            <Button onClick={handleExportExcel}>
+              匯出Excel
+            </Button>
+          </div>
           <Tabs defaultValue="list" className="w-full">
             <TabsList className="grid w-full grid-cols-2">
               <TabsTrigger value="list">閒置資產列表</TabsTrigger>
               <TabsTrigger value="add">新增資產</TabsTrigger>
             </TabsList>
             <TabsContent value="list">
-              <IdleAssetsFilter 
-                onFilterChange={handleFilterChange} 
-                agencies={uniqueAgencies}
-                districts={uniqueDistricts}
-              />
-              <IdleAssetsFilterSummary 
-                isAssetIncluded={isAssetIncluded}
-                selectedAssetTypes={selectedAssetTypes}
-                isAgencyIncluded={isAgencyIncluded}
-                selectedAgencies={selectedAgencies}
-                isDistrictIncluded={isDistrictIncluded}
-                selectedDistricts={selectedDistricts}
-              />
-              <IdleAssetTable 
-                assets={sortedAssets}
-                sortConfig={sortConfig}
-                onSort={handleSort}
-                onRowClick={handleRowClick}
-              />
+              <div className="space-y-4">
+                <IdleAssetsFilter 
+                  onFilterChange={handleFilterChange} 
+                  agencies={uniqueAgencies}
+                  districts={uniqueDistricts}
+                />
+                <IdleAssetsFilterSummary 
+                  isAssetIncluded={isAssetIncluded}
+                  selectedAssetTypes={selectedAssetTypes}
+                  isAgencyIncluded={isAgencyIncluded}
+                  selectedAgencies={selectedAgencies}
+                  isDistrictIncluded={isDistrictIncluded}
+                  selectedDistricts={selectedDistricts}
+                />
+                <IdleAssetTable 
+                  assets={sortedAssets}
+                  sortConfig={sortConfig}
+                  onSort={handleSort}
+                  onRowClick={handleRowClick}
+                />
+              </div>
             </TabsContent>
             <TabsContent value="add">
               <form className="space-y-4">

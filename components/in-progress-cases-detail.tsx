@@ -16,6 +16,7 @@ import {
   TableRow,
 } from "@/components/ui/table"
 import { OneInProgressCaseDetail } from './one-in-progress-case-detail'
+import * as XLSX from 'xlsx'
 
 interface SortConfig {
   key: keyof Case | null
@@ -124,6 +125,37 @@ export function InProgressCasesDetailComponent() {
     setSelectedCase(caseItem);
   };
 
+  // 添加匯出Excel功能
+  const handleExportExcel = () => {
+    // 準備要匯出的資料，包含所有欄位
+    const exportData = sortedCases.map(caseItem => ({
+      'ID': caseItem.id,
+      '案件ID': caseItem['案件ID'],
+      '案件名稱': caseItem['案件名稱'],
+      '案件狀態': caseItem['案件狀態'],
+      '活化目標說明': caseItem['活化目標說明'],
+      '活化目標類型': caseItem['活化目標類型'],
+      '任務總數': caseItem['任務總數'],
+      '已完成任務數': caseItem['已完成任務數'],
+      '標的名稱': caseItem['標的名稱'],
+      '地址': caseItem['地址'],
+      '行政區': caseItem['行政區'],
+      '管理機關': caseItem['管理機關'],
+      '資產類型': caseItem['資產類型'],
+      '最新會議結論': caseItem['最新會議結論'],
+      '建立時間': caseItem['建立時間'],
+      '更新時間': caseItem['更新時間']
+    }))
+
+    // 創建工作表
+    const ws = XLSX.utils.json_to_sheet(exportData)
+    const wb = XLSX.utils.book_new()
+    XLSX.utils.book_append_sheet(wb, ws, '進行中案件')
+
+    // 下載檔案
+    XLSX.writeFile(wb, '進行中案件清單.xlsx')
+  }
+
   if (isLoading) return <div>載入中...</div>
 
   // 如果有選中的案件，顯示詳情頁面
@@ -156,14 +188,17 @@ export function InProgressCasesDetailComponent() {
             </TabsList>
             <TabsContent value="list">
               <div className="space-y-4">
-                {/* 搜尋欄位 */}
-                <div className="flex gap-2">
+                {/* 修改搜尋欄位和按鈕的容器 */}
+                <div className="flex justify-between items-center">
                   <Input
                     placeholder="搜尋案件..."
                     value={searchText}
                     onChange={(e) => setSearchText(e.target.value)}
                     className="max-w-sm"
                   />
+                  <Button onClick={handleExportExcel}>
+                    匯出Excel
+                  </Button>
                 </div>
 
                 {/* 表格 */}
