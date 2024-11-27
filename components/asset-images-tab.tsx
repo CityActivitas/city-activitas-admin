@@ -15,19 +15,91 @@ export function AssetImagesTab({ assetId }: AssetImagesTabProps) {
   const [imageTitle, setImageTitle] = useState('')
   const [imageDescription, setImageDescription] = useState('')
   const [previewImage, setPreviewImage] = useState<string | null>(null)
+  const [selectedFile, setSelectedFile] = useState<File | null>(null)
+
+  const sanitizeFileName = (fileName: string) => {
+    // 取得檔案副檔名
+    const ext = fileName.split('.').pop()
+    // 生成隨機檔名 (timestamp + 隨機字串)
+    const randomName = `${Date.now()}-${Math.random().toString(36).substring(2, 15)}`
+    return `${randomName}.${ext}`
+  }
+
+  const handleUpload = async () => {
+    if (!selectedFile || !imageTitle) return
+
+    try {
+      const token = localStorage.getItem('access_token')
+      
+      // 建立新的 File 物件，使用處理過的檔名
+      const sanitizedFile = new File(
+        [selectedFile],
+        sanitizeFileName(selectedFile.name),
+        { type: selectedFile.type }
+      )
+      
+      // 建立 FormData
+      const formData = new FormData()
+      formData.append('file', sanitizedFile)
+
+      // 將 title 和 description 作為 query parameters
+      const queryParams = new URLSearchParams({
+        title: imageTitle,
+      })
+      if (imageDescription) {
+        queryParams.append('description', imageDescription)
+      }
+
+      const response = await fetch(
+        `http://localhost:8000/api/v1/assets/${assetId}/images?${queryParams.toString()}`, 
+        {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${token}`
+          },
+          body: formData
+        }
+      )
+
+      if (!response.ok) {
+        const errorData = await response.json()
+        throw new Error(errorData.detail || '上傳失敗')
+      }
+
+      const result = await response.json()
+      console.log('Upload success:', result)
+
+      // 上傳成功後清除表單
+      setShowUploadCard(false)
+      setPreviewImage(null)
+      setImageTitle('')
+      setImageDescription('')
+      setSelectedFile(null)
+      
+      // TODO: 重新載入圖片列表
+      
+    } catch (error) {
+      console.error('Error uploading image:', error)
+      // TODO: 顯示錯誤訊息給使用者
+    }
+  }
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     accept: {
       'image/*': ['.png', '.jpg', '.jpeg', '.gif']
     },
+    maxSize: 5 * 1024 * 1024, // 5MB 限制
     onDrop: (acceptedFiles) => {
-      console.log('Dropped files:', acceptedFiles)
-      // 創建預覽URL
       const file = acceptedFiles[0]
       if (file) {
+        setSelectedFile(file)
         const previewUrl = URL.createObjectURL(file)
         setPreviewImage(previewUrl)
       }
+    },
+    onDropRejected: (fileRejections) => {
+      // TODO: 顯示錯誤訊息給使用者
+      console.error('File rejected:', fileRejections)
     }
   })
 
@@ -126,11 +198,15 @@ export function AssetImagesTab({ assetId }: AssetImagesTabProps) {
                   setPreviewImage(null)
                   setImageTitle('')
                   setImageDescription('')
+                  setSelectedFile(null)
                 }}
               >
                 清除
               </Button>
-              <Button>
+              <Button
+                onClick={handleUpload}
+                disabled={!selectedFile || !imageTitle}
+              >
                 新增
               </Button>
             </div>
