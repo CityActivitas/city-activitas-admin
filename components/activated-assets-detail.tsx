@@ -15,6 +15,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
+import * as XLSX from 'xlsx'
 
 interface SortConfig {
   key: keyof ActivatedAsset | null
@@ -120,6 +121,42 @@ export function ActivatedAssetsDetailComponent() {
     setSelectedAsset(asset)
   }
 
+  // 添加匯出Excel功能
+  const handleExportExcel = () => {
+    // 準備要匯出的資料，包含所有欄位
+    const exportData = sortedAssets.map(asset => ({
+      'ID': asset.id,
+      '活化ID': asset['活化ID'],
+      '活化年度': asset['活化年度'],
+      '活化狀態': asset['活化狀態'],
+      '活化開始日期': asset['活化開始日期'],
+      '列入計算': asset['列入計算'],
+      '是否補列': asset['是否補列'],
+      '補列年度': asset['補列年度'],
+      '地點說明': asset['地點說明'],
+      '地址': asset['地址'],
+      '行政區': asset['行政區'],
+      '用途類型': asset['用途類型'],
+      '計畫用途': asset['計畫用途'],
+      '標的名稱': asset['標的名稱'],
+      '管理機關': asset['管理機關'],
+      '需求機關': asset['需求機關'],
+      '資產ID': asset['資產ID'],
+      '土地公告現值': asset['土地公告現值'],
+      '房屋課稅現值': asset['房屋課稅現值'],
+      '節流效益': asset['節流效益'],
+      '備註': asset['備註']
+    }))
+
+    // 創建工作表
+    const ws = XLSX.utils.json_to_sheet(exportData)
+    const wb = XLSX.utils.book_new()
+    XLSX.utils.book_append_sheet(wb, ws, '已活化資產')
+
+    // 下載檔案
+    XLSX.writeFile(wb, '已活化資產清單.xlsx')
+  }
+
   if (isLoading) return <div>載入中...</div>
 
   return (
@@ -135,14 +172,17 @@ export function ActivatedAssetsDetailComponent() {
             </TabsList>
             <TabsContent value="list">
               <div className="space-y-4">
-                {/* 搜尋欄位 */}
-                <div className="flex gap-2">
+                {/* 修改搜尋欄位和按鈕的容器 */}
+                <div className="flex justify-between items-center">
                   <Input
                     placeholder="搜尋資產..."
                     value={searchText}
                     onChange={(e) => setSearchText(e.target.value)}
                     className="max-w-sm"
                   />
+                  <Button onClick={handleExportExcel}>
+                    匯出Excel
+                  </Button>
                 </div>
 
                 {/* 表格 */}
