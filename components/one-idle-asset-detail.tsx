@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { ArrowLeft, MapPin } from 'lucide-react'
+import { ArrowLeft, MapPin, Upload } from 'lucide-react'
 import { DistrictSelectorDrawerComponent } from "@/components/district-selector-drawer"
 import { AgenciesDrawerComponent } from "@/components/agencies-drawer"
 import {
@@ -22,6 +22,7 @@ import {
 import { LandRelationsTab } from "@/components/land-relations-tab"
 import { LocationDrawerComponent } from "@/components/location-drawer"
 import { useToast } from "@/hooks/use-toast"
+import { AssetImagesTab } from "@/components/asset-images-tab"
 
 interface Asset {
   id: string;
@@ -283,7 +284,7 @@ export function OneIdleAssetDetail({ assetId, onBack, assetData, onUpdateSuccess
 
       const updates = [];
 
-      // 資產基本資料欄位映射
+      // 資產基本資料欄位映��
       const assetFieldsMap: { [key: string]: string } = {
         assetType: 'type',
         agency_id: 'agency_id',
@@ -582,8 +583,9 @@ export function OneIdleAssetDetail({ assetId, onBack, assetData, onUpdateSuccess
       </div>
 
       <Tabs defaultValue="asset-details" className="w-full">
-        <TabsList className="grid w-full grid-cols-2">
+        <TabsList className="grid w-full grid-cols-3">
           <TabsTrigger value="asset-details">資產細項</TabsTrigger>
+          <TabsTrigger value="image-list">圖片列表</TabsTrigger>
           {hasLandRelations && (
             <TabsTrigger value="land-relations">建物土地關聯細項</TabsTrigger>
           )}
@@ -794,6 +796,9 @@ export function OneIdleAssetDetail({ assetId, onBack, assetData, onUpdateSuccess
               </CardContent>
             </Card>
           </div>
+        </TabsContent>
+        <TabsContent value="image-list">
+          <AssetImagesTab assetId={formData.assetId} />
         </TabsContent>
         <TabsContent value="land-relations">
           <LandRelationsTab landRelationData={landRelationData} />
