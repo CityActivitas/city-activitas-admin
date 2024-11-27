@@ -1,21 +1,68 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Upload, X } from "lucide-react"
 import { useDropzone } from 'react-dropzone'
+import { useToast } from "@/hooks/use-toast"
+
+interface AssetImage {
+  id: number
+  storage_url: string
+  title: string
+  description: string
+  created_at: string
+  updated_at: string
+  editor_email: string
+  file_name: string
+  file_size: number
+  mime_type: string
+}
 
 interface AssetImagesTabProps {
   assetId: string
 }
 
 export function AssetImagesTab({ assetId }: AssetImagesTabProps) {
+  const { toast } = useToast()
+  const [images, setImages] = useState<AssetImage[]>([])
   const [showUploadCard, setShowUploadCard] = useState(false)
   const [imageTitle, setImageTitle] = useState('')
   const [imageDescription, setImageDescription] = useState('')
   const [previewImage, setPreviewImage] = useState<string | null>(null)
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
+
+  // 取得圖片列表
+  const fetchImages = async () => {
+    try {
+      const token = localStorage.getItem('access_token')
+      const response = await fetch(
+        `http://localhost:8000/api/v1/assets/${assetId}/images`,
+        {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        }
+      )
+
+      if (!response.ok) throw new Error('Failed to fetch images')
+      
+      const data = await response.json()
+      setImages(data)
+    } catch (error) {
+      console.error('Error fetching images:', error)
+      toast({
+        title: "載入失敗",
+        description: "無法取得圖片列表",
+        variant: "destructive",
+      })
+    }
+  }
+
+  useEffect(() => {
+    fetchImages()
+  }, [assetId])
 
   const sanitizeFileName = (fileName: string) => {
     // 取得檔案副檔名
@@ -67,21 +114,37 @@ export function AssetImagesTab({ assetId }: AssetImagesTabProps) {
       }
 
       const result = await response.json()
-      console.log('Upload success:', result)
+      
+      // 顯示成功訊息
+      toast({
+        title: "上傳成功",
+        description: "圖片已成功上傳",
+        variant: "default",
+      })
 
-      // 上傳成功後清除表單
+      // 清除表單並關閉上傳區塊
+      handleReset()
       setShowUploadCard(false)
-      setPreviewImage(null)
-      setImageTitle('')
-      setImageDescription('')
-      setSelectedFile(null)
       
       // TODO: 重新載入圖片列表
       
     } catch (error) {
       console.error('Error uploading image:', error)
-      // TODO: 顯示錯誤訊息給使用者
+      // 顯示錯誤訊息
+      toast({
+        title: "上傳失敗",
+        description: error instanceof Error ? error.message : "圖片上傳時發生錯誤",
+        variant: "destructive",
+      })
     }
+  }
+
+  // 集中處理重置表單的邏輯
+  const handleReset = () => {
+    setPreviewImage(null)
+    setImageTitle('')
+    setImageDescription('')
+    setSelectedFile(null)
   }
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
@@ -98,10 +161,34 @@ export function AssetImagesTab({ assetId }: AssetImagesTabProps) {
       }
     },
     onDropRejected: (fileRejections) => {
-      // TODO: 顯示錯誤訊息給使用者
-      console.error('File rejected:', fileRejections)
+      const error = fileRejections[0]?.errors[0]
+      let errorMessage = "檔案上傳失敗"
+      
+      if (error?.code === "file-too-large") {
+        errorMessage = "檔案大小不能超過 5MB"
+      } else if (error?.code === "file-invalid-type") {
+        errorMessage = "只接受 PNG、JPG、GIF 圖片格式"
+      }
+
+      toast({
+        title: "檔案錯誤",
+        description: errorMessage,
+        variant: "destructive",
+      })
     }
   })
+
+  // 格式化檔案大小
+  const formatFileSize = (bytes: number) => {
+    if (bytes < 1024) return bytes + ' B'
+    if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB'
+    return (bytes / (1024 * 1024)).toFixed(1) + ' MB'
+  }
+
+  // 格式化時間
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleString('zh-TW')
+  }
 
   return (
     <div className="space-y-4">
@@ -110,9 +197,7 @@ export function AssetImagesTab({ assetId }: AssetImagesTabProps) {
         <Button onClick={() => {
           setShowUploadCard(!showUploadCard)
           if (!showUploadCard) {
-            setPreviewImage(null)
-            setImageTitle('')
-            setImageDescription('')
+            handleReset()
           }
         }}>
           {showUploadCard ? (
@@ -194,12 +279,7 @@ export function AssetImagesTab({ assetId }: AssetImagesTabProps) {
             <div className="flex gap-2 justify-end">
               <Button
                 variant="outline"
-                onClick={() => {
-                  setPreviewImage(null)
-                  setImageTitle('')
-                  setImageDescription('')
-                  setSelectedFile(null)
-                }}
+                onClick={handleReset}
               >
                 清除
               </Button>
@@ -215,11 +295,37 @@ export function AssetImagesTab({ assetId }: AssetImagesTabProps) {
       )}
 
       {/* 圖片列表 */}
-      <div className="grid grid-cols-3 gap-4">
-        {/* 這裡可以放圖片列表，先放個預設內容 */}
-        <div className="relative aspect-square rounded-lg border-2 border-dashed border-gray-200 flex items-center justify-center">
-          <p className="text-gray-500">尚無圖片</p>
-        </div>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        {images.length > 0 ? (
+          images.map((image) => (
+            <Card key={image.id} className="overflow-hidden">
+              <div className="aspect-video relative">
+                <img
+                  src={image.storage_url}
+                  alt={image.title}
+                  className="object-cover w-full h-full"
+                />
+              </div>
+              <CardContent className="p-4 space-y-2">
+                <h3 className="font-semibold truncate">{image.title}</h3>
+                {image.description && (
+                  <p className="text-sm text-gray-500 line-clamp-2">
+                    {image.description}
+                  </p>
+                )}
+                <div className="text-xs text-gray-400 space-y-1">
+                  <p>大小：{formatFileSize(image.file_size)}</p>
+                  <p>上傳者：{image.editor_email}</p>
+                  <p>更新時間：{formatDate(image.updated_at)}</p>
+                </div>
+              </CardContent>
+            </Card>
+          ))
+        ) : (
+          <div className="col-span-full text-center py-8 text-gray-500">
+            尚無圖片
+          </div>
+        )}
       </div>
     </div>
   )
