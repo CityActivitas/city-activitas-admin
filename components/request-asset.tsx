@@ -7,6 +7,7 @@ import { useState, useEffect } from "react"
 import { FileText, X } from "lucide-react"
 import { RequestAssetTable } from "./request-asset-table"
 import { OneRequestAssetDetail } from "./one-request-asset-detail"
+import * as XLSX from 'xlsx'
 
 interface AssetRequest {
   id: string
@@ -23,6 +24,10 @@ interface AssetRequest {
   requirement_status: string
   created_at: string
   reporter_email: string
+  updated_at: string
+  reviewer_note: string
+  reviewed_at: string
+  reviewer_id: string
 }
 
 interface SortConfig {
@@ -105,31 +110,63 @@ export function RequestAsset() {
     return aValue < bValue ? 1 : -1
   })
 
+  const handleExportExcel = () => {
+    const exportData = sortedRequests.map(request => ({
+      '需求ID': request.id,
+      '需求機關': agencyMap[request.agency_id] || request.agency_id,
+      '需求用途': request.purpose,
+      '資產種類': request.asset_type,
+      '希望樓層': request.preferred_floor || '',
+      '面積(平方公尺)': request.area,
+      '希望地點': districtMap[request.district_id] || request.district_id,
+      '必要性、急迫性說明': request.urgency_note,
+      '經費來源': request.funding_source,
+      '提報者信箱': request.reporter_email,
+      '需求狀態': request.requirement_status,
+      '建立時間': request.created_at,
+      '更新時間': request.updated_at,
+      '審核者備註': request.reviewer_note || '',
+      '審核時間': request.reviewed_at || '',
+      '審核者ID': request.reviewer_id || ''
+    }))
+
+    const ws = XLSX.utils.json_to_sheet(exportData)
+    const wb = XLSX.utils.book_new()
+    XLSX.utils.book_append_sheet(wb, ws, '資產需求')
+
+    XLSX.writeFile(wb, '資產需求清單.xlsx')
+  }
+
   return (
     <div className="min-h-screen bg-gray-100">
       <Header />
       <main className="container mx-auto px-4 pt-24">
         <div className="flex justify-between items-center mb-6">
-          <h1 className="text-2xl font-bold">申請資產需求</h1>
-          {!selectedRequest && (
-            <Button 
-              onClick={toggleForm}
-              className="flex items-center gap-2"
-              variant={showForm ? "secondary" : "default"}
-            >
-              {showForm ? (
-                <>
-                  <X className="h-4 w-4" />
-                  關閉表單
-                </>
-              ) : (
-                <>
-                  <FileText className="h-4 w-4" />
-                  新增需求
-                </>
-              )}
+          <h1 className="text-2xl font-bold">申請資產需求共{requests.length}筆</h1>
+          <div className="flex gap-2">
+            <Button onClick={handleExportExcel}>
+              匯出Excel
             </Button>
-          )}
+            {!selectedRequest && (
+              <Button 
+                onClick={toggleForm}
+                className="flex items-center gap-2"
+                variant={showForm ? "secondary" : "default"}
+              >
+                {showForm ? (
+                  <>
+                    <X className="h-4 w-4" />
+                    關閉表單
+                  </>
+                ) : (
+                  <>
+                    <FileText className="h-4 w-4" />
+                    新增需求
+                  </>
+                )}
+              </Button>
+            )}
+          </div>
         </div>
 
         {showForm ? (
