@@ -103,7 +103,7 @@ export function AssetImagesTab({ assetId }: AssetImagesTabProps) {
   }
 
   const handleUpload = async () => {
-    if (!selectedFile || !imageTitle) return
+    if (!selectedFile || !imageTitle || !assetId) return
 
     try {
       const token = localStorage.getItem('access_token')
@@ -149,21 +149,25 @@ export function AssetImagesTab({ assetId }: AssetImagesTabProps) {
       toast({
         title: "上傳成功",
         description: "圖片已成功上傳",
-        variant: "default",
       })
 
-      // 清除表單並關閉上傳區塊
-      handleReset()
+      // 清除表單
+      setImageTitle('')
+      setImageDescription('')
+      setSelectedFile(null)
+      setPreviewImage(null)
+      
+      // 關閉上傳區塊
       setShowUploadCard(false)
       
-      // TODO: 重新載入圖片列表
+      // 重新載入圖片列表
+      await fetchImages()
       
     } catch (error) {
       console.error('Error uploading image:', error)
-      // 顯示錯誤訊息
       toast({
         title: "上傳失敗",
-        description: error instanceof Error ? error.message : "圖片上傳時發生錯誤",
+        description: error instanceof Error ? error.message : "上傳圖片時發生錯誤",
         variant: "destructive",
       })
     }
