@@ -119,6 +119,21 @@ export function AssetImagesTab({ assetId }: AssetImagesTabProps) {
                 />
               </div>
             </div>
+            <div className="flex gap-2 justify-end">
+              <Button
+                variant="outline"
+                onClick={() => {
+                  setPreviewImage(null)
+                  setImageTitle('')
+                  setImageDescription('')
+                }}
+              >
+                清除
+              </Button>
+              <Button>
+                新增
+              </Button>
+            </div>
           </CardContent>
         </Card>
       )}
