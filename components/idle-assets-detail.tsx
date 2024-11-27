@@ -57,7 +57,7 @@ export function IdleAssetsDetailComponent() {
         }
 
         const data = await response.json()
-        console.log(data)
+        // console.log(data)
         setAssets(data)
       } catch (error) {
         console.error('Error fetching idle assets:', error)

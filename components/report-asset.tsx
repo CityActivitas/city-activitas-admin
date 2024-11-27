@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button"
 import { ReportAssetForm } from "./report-asset-form"
 import { ProposalAssetTable, SortConfig } from "./proposal-asset-table"
 import { OneProposalAssetDetail } from "./one-proposal-asset-detail"
+import * as XLSX from 'xlsx'
 
 interface AssetProposal {
   id: string
@@ -88,6 +89,7 @@ export function ReportAsset() {
       })
       if (!response.ok) throw new Error('獲取提案列表失敗')
       const data = await response.json()
+      // console.log(data)
       setProposals(data)
     } catch (error) {
       console.error('獲取提案列表錯誤:', error)
@@ -142,31 +144,76 @@ export function ReportAsset() {
     setShowForm(!showForm)
   }
 
+  const handleExportExcel = () => {
+    const exportData = sortedProposals.map(proposal => ({
+      '提報ID': proposal.id,
+      '地段': proposal.section,
+      '標的名稱': proposal.target_name,
+      '使用分區': proposal.zone_type,
+      '活化狀態': proposal.activation_status,
+      '地址': proposal.address,
+      '管理機關': agencyMap[proposal.agency_id] || proposal.agency_id,
+      '面積': proposal.area,
+      '座標': proposal.coordinates,
+      '建立時間': proposal.created_at,
+      '行政區': districtMap[proposal.district_id] || proposal.district_id,
+      '預計活化日期': proposal.estimated_activation_date,
+      '建物面積': proposal.floor_area,
+      '建照狀態': proposal.has_building_license,
+      '使用執照狀態': proposal.has_usage_license,
+      '土地類型': proposal.land_type,
+      '土地使用': proposal.land_use,
+      '地號': proposal.lot_number,
+      '是否申請解除列管': proposal.is_requesting_delisting ? '是' : '否',
+      '解除列管原因': proposal.delisting_reason,
+      '備註': proposal.note,
+      '提案狀態': proposal.proposal_status,
+      '提報者信箱': proposal.reporter_email,
+      '審查時間': proposal.reviewed_at,
+      '審查者ID': proposal.reviewer_id,
+      '審查意見': proposal.reviewer_note,
+      '更新時間': proposal.updated_at,
+      '使用說明': proposal.usage_description,
+      '使用狀態': proposal.usage_status,
+    }))
+
+    const ws = XLSX.utils.json_to_sheet(exportData)
+    const wb = XLSX.utils.book_new()
+    XLSX.utils.book_append_sheet(wb, ws, '提報資產')
+
+    XLSX.writeFile(wb, '提報資產清單.xlsx')
+  }
+
   return (
     <div className="min-h-screen bg-gray-100">
       <Header />
       <main className="container mx-auto px-4 pt-24">
         <div className="flex justify-between items-center mb-6">
-          <h1 className="text-2xl font-bold">提報資產</h1>
-          {!selectedProposal && (
-            <Button 
-              onClick={toggleForm}
-              className="flex items-center gap-2"
-              variant={showForm ? "secondary" : "default"}
-            >
-              {showForm ? (
-                <>
-                  <X className="h-4 w-4" />
-                  關閉表單
-                </>
-              ) : (
-                <>
-                  <Building className="h-4 w-4" />
-                  新增提報
-                </>
-              )}
+          <h1 className="text-2xl font-bold">提報資產共{proposals.length}筆</h1>
+          <div className="flex gap-2">
+            <Button onClick={handleExportExcel}>
+              匯出Excel
             </Button>
-          )}
+            {!selectedProposal && (
+              <Button 
+                onClick={toggleForm}
+                className="flex items-center gap-2"
+                variant={showForm ? "secondary" : "default"}
+              >
+                {showForm ? (
+                  <>
+                    <X className="h-4 w-4" />
+                    關閉表單
+                  </>
+                ) : (
+                  <>
+                    <Building className="h-4 w-4" />
+                    新增提報
+                  </>
+                )}
+              </Button>
+            )}
+          </div>
         </div>
 
         {showForm ? (
