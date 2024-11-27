@@ -3,9 +3,34 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
-import { Upload, X } from "lucide-react"
+import { Upload, X, Pencil, Trash2, MoreVertical } from "lucide-react"
 import { useDropzone } from 'react-dropzone'
 import { useToast } from "@/hooks/use-toast"
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from "@/components/ui/dialog"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog"
+import { Label } from "@/components/ui/label"
 
 interface AssetImage {
   id: number
@@ -32,6 +57,11 @@ export function AssetImagesTab({ assetId }: AssetImagesTabProps) {
   const [imageDescription, setImageDescription] = useState('')
   const [previewImage, setPreviewImage] = useState<string | null>(null)
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
+  const [previewingImage, setPreviewingImage] = useState<AssetImage | null>(null)
+  const [editingImage, setEditingImage] = useState<AssetImage | null>(null)
+  const [deletingImage, setDeletingImage] = useState<AssetImage | null>(null)
+  const [editTitle, setEditTitle] = useState('')
+  const [editDescription, setEditDescription] = useState('')
 
   // 取得圖片列表
   const fetchImages = async () => {
@@ -190,6 +220,86 @@ export function AssetImagesTab({ assetId }: AssetImagesTabProps) {
     return new Date(dateString).toLocaleString('zh-TW')
   }
 
+  // 圖片卡片點擊處理
+  const handleImageClick = (image: AssetImage) => {
+    setPreviewingImage(image)
+  }
+
+  // 處理編輯
+  const handleEdit = async () => {
+    if (!editingImage) return
+
+    try {
+      const token = localStorage.getItem('access_token')
+      const response = await fetch(
+        `http://localhost:8000/api/v1/assets/images/${editingImage.id}`,
+        {
+          method: 'PATCH',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            title: editTitle,
+            description: editDescription,
+          }),
+        }
+      )
+
+      if (!response.ok) throw new Error('更新失敗')
+
+      toast({
+        title: "更新成功",
+        description: "圖片資訊已更新",
+      })
+
+      // 重新載入圖片列表
+      await fetchImages()
+      setEditingImage(null)
+    } catch (error) {
+      toast({
+        title: "更新失敗",
+        description: error instanceof Error ? error.message : "更新圖片資訊時發生錯誤",
+        variant: "destructive",
+      })
+    }
+  }
+
+  // 處理刪除
+  const handleDelete = async () => {
+    if (!deletingImage) return
+
+    try {
+      const token = localStorage.getItem('access_token')
+      const response = await fetch(
+        `http://localhost:8000/api/v1/assets/images/${deletingImage.id}`,
+        {
+          method: 'DELETE',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+          },
+        }
+      )
+
+      if (!response.ok) throw new Error('刪除失敗')
+
+      toast({
+        title: "刪除成功",
+        description: "圖片已刪除",
+      })
+
+      // 重新載入圖片列表
+      await fetchImages()
+      setDeletingImage(null)
+    } catch (error) {
+      toast({
+        title: "刪除失敗",
+        description: error instanceof Error ? error.message : "刪除圖片時發生錯誤",
+        variant: "destructive",
+      })
+    }
+  }
+
   return (
     <div className="space-y-4">
       {/* 上傳按鈕 */}
@@ -296,37 +406,142 @@ export function AssetImagesTab({ assetId }: AssetImagesTabProps) {
 
       {/* 圖片列表 */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {images.length > 0 ? (
-          images.map((image) => (
-            <Card key={image.id} className="overflow-hidden">
-              <div className="aspect-video relative">
-                <img
-                  src={image.storage_url}
-                  alt={image.title}
-                  className="object-cover w-full h-full"
-                />
+        {images.map((image) => (
+          <Card key={image.id} className="overflow-hidden group">
+            <div className="aspect-video relative">
+              <img
+                src={image.storage_url}
+                alt={image.title}
+                className="object-cover w-full h-full cursor-pointer"
+                onClick={() => handleImageClick(image)}
+              />
+              {/* 操作選單 */}
+              <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="secondary" size="icon">
+                      <MoreVertical className="h-4 w-4" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent>
+                    <DropdownMenuItem onClick={() => {
+                      setEditingImage(image)
+                      setEditTitle(image.title)
+                      setEditDescription(image.description || '')
+                    }}>
+                      <Pencil className="mr-2 h-4 w-4" />
+                      編輯
+                    </DropdownMenuItem>
+                    <DropdownMenuItem 
+                      onClick={() => setDeletingImage(image)}
+                      className="text-red-600"
+                    >
+                      <Trash2 className="mr-2 h-4 w-4" />
+                      刪除
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
               </div>
-              <CardContent className="p-4 space-y-2">
-                <h3 className="font-semibold truncate">{image.title}</h3>
-                {image.description && (
-                  <p className="text-sm text-gray-500 line-clamp-2">
-                    {image.description}
-                  </p>
-                )}
-                <div className="text-xs text-gray-400 space-y-1">
-                  <p>大小：{formatFileSize(image.file_size)}</p>
-                  <p>上傳者：{image.editor_email}</p>
-                  <p>更新時間：{formatDate(image.updated_at)}</p>
-                </div>
-              </CardContent>
-            </Card>
-          ))
-        ) : (
-          <div className="col-span-full text-center py-8 text-gray-500">
-            尚無圖片
-          </div>
-        )}
+            </div>
+            <CardContent className="p-4 space-y-2">
+              <h3 className="font-semibold truncate">{image.title}</h3>
+              {image.description && (
+                <p className="text-sm text-gray-500 line-clamp-2">
+                  {image.description}
+                </p>
+              )}
+              <div className="text-xs text-gray-400 space-y-1">
+                <p>大小：{formatFileSize(image.file_size)}</p>
+                <p>上傳者：{image.editor_email}</p>
+                <p>更新時間：{formatDate(image.updated_at)}</p>
+              </div>
+            </CardContent>
+          </Card>
+        ))}
       </div>
+
+      {/* 圖片預覽 Dialog */}
+      <Dialog open={!!previewingImage} onOpenChange={() => setPreviewingImage(null)}>
+        <DialogContent className="max-w-4xl w-[90vw]">
+          <DialogHeader>
+            <DialogTitle>{previewingImage?.title}</DialogTitle>
+            {previewingImage?.description && (
+              <DialogDescription>
+                {previewingImage.description}
+              </DialogDescription>
+            )}
+          </DialogHeader>
+          <div className="relative aspect-[16/9] mt-2">
+            <img
+              src={previewingImage?.storage_url}
+              alt={previewingImage?.title}
+              className="object-contain w-full h-full"
+            />
+          </div>
+          <div className="text-sm text-gray-500 space-y-1 mt-2">
+            <p>檔案名稱：{previewingImage?.file_name}</p>
+            <p>檔案大小：{previewingImage && formatFileSize(previewingImage.file_size)}</p>
+            <p>檔案類型：{previewingImage?.mime_type}</p>
+            <p>上傳者：{previewingImage?.editor_email}</p>
+            <p>上傳時間：{previewingImage && formatDate(previewingImage.created_at)}</p>
+            <p>更新時間：{previewingImage && formatDate(previewingImage.updated_at)}</p>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* 編輯 Dialog */}
+      <Dialog open={!!editingImage} onOpenChange={() => setEditingImage(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>編輯圖片資訊</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <Label htmlFor="edit-title">標題</Label>
+              <Input
+                id="edit-title"
+                value={editTitle}
+                onChange={(e) => setEditTitle(e.target.value)}
+              />
+            </div>
+            <div>
+              <Label htmlFor="edit-description">描述</Label>
+              <Textarea
+                id="edit-description"
+                value={editDescription}
+                onChange={(e) => setEditDescription(e.target.value)}
+                rows={3}
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setEditingImage(null)}>
+              取消
+            </Button>
+            <Button onClick={handleEdit}>
+              更新
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* 刪除確認 Dialog */}
+      <AlertDialog open={!!deletingImage} onOpenChange={() => setDeletingImage(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>確定要刪除這張圖片嗎？</AlertDialogTitle>
+            <AlertDialogDescription>
+              此操作無法復原。圖片將會從系統中永久刪除。
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>取消</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDelete} className="bg-red-600">
+              刪除
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   )
 } 
